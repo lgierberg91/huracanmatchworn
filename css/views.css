@@ -51,31 +51,29 @@
 .hero__piece.dressup{ justify-items: center; text-align: center; }
 
 .figurita{
-  position: relative; width: min(300px, 100%);
-  display: grid; justify-items: center;
+  position: relative; width: min(340px, 100%);
+  display: grid; grid-template-columns: 34px 1fr 34px;
   transition: opacity var(--t-fast) var(--ease);
 }
 .figurita.is-loading{ opacity: .6; }
-.figurita__row{
-  display: flex; align-items: center; justify-content: center; gap: 14px; width: 100%;
-}
-.figurita__row--player{ position: relative; z-index: 2; margin-bottom: -16px; }
-.figurita__row--jersey{ position: relative; z-index: 1; }
+.figurita__row{ display: contents; }
+.figurita__row--player > *{ position: relative; z-index: 2; margin-bottom: -16px; align-self: center; }
+.figurita__row--jersey > *{ position: relative; z-index: 1; align-self: center; }
 .figurita__photo{
-  width: 116px; height: 116px; border-radius: 50%; overflow: hidden; flex: 0 0 auto;
+  width: 116px; height: 116px; border-radius: 50%; overflow: hidden; justify-self: center;
   background: #fff; border: 3px solid #fff; box-shadow: 0 10px 20px -12px rgba(0,0,0,.35);
 }
 .figurita__photo img{ width: 100%; height: 100%; object-fit: cover; object-position: top center; }
 .figurita__jersey{
-  flex: 1 1 auto; min-width: 0; display: grid; place-items: center;
+  min-width: 0; display: grid; place-items: center;
 }
 .figurita__jersey img{
-  width: 84%; max-height: 280px; object-fit: contain;
+  width: 88%; max-height: 290px; object-fit: contain;
   filter: drop-shadow(0 18px 22px rgba(0,0,0,.28));
 }
 
 .dressup__arrow{
-  display: grid; place-items: center; width: 34px; height: 34px; flex: 0 0 auto;
+  display: grid; place-items: center; width: 34px; height: 34px;
   border-radius: 50%; border: 1px solid var(--line); background: var(--paper);
   color: var(--ink); cursor: pointer;
   transition: background var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
