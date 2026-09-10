@@ -1,32 +1,39 @@
 /**
  * "Vestidor": vive dentro del hero, en el lugar de la vieja "pieza del día".
- * Una figurita (cara + camiseta) que se arma combinando un jugador histórico
- * con una camiseta del archivo. Los chevrones van al costado de cada elemento
- * (no abajo, sin texto) y navegan de a uno.
+ * Muestra una foto pre-generada con IA (jugador histórico + camiseta de una
+ * temporada) elegida por el visitante mediante chips. Al cambiar de jugador
+ * o temporada se simula una breve instancia de "generación" (con leyenda)
+ * antes de revelar la imagen, que ya está pre-generada y sólo se precarga.
  */
 
-import { qs, on } from '../lib/dom.js';
-import { icon } from '../lib/icons.js';
-import { PLAYERS, JERSEYS } from '../data/dressup.js';
-import { cutoutBackground } from '../lib/cutout.js';
+import { esc, qs, qsa, on } from '../lib/dom.js';
+import { HERO_PLAYERS } from '../data/dressup.js';
 
-function arrowHTML(role, dir, label) {
-  return `<button type="button" class="dressup__arrow" data-role="${role}" data-dir="${dir}" aria-label="${label}">${icon(dir < 0 ? 'arrowLeft' : 'arrowRight')}</button>`;
-}
+const LEGENDS = [
+  'Creando imagen con IA…',
+  'Probándole la camiseta…',
+  'Afinando los últimos detalles…',
+];
 
 export function dressUpHTML() {
+  const player = HERO_PLAYERS[0];
+  const showPlayerPicker = HERO_PLAYERS.length > 1;
+
   return `<div class="hero__piece dressup" id="dressup">
-      <div class="figurita">
-        <div class="figurita__row figurita__row--player">
-          ${arrowHTML('player', -1, 'Jugador anterior')}
-          <div class="figurita__photo"><img id="dressup-face" alt=""></div>
-          ${arrowHTML('player', 1, 'Jugador siguiente')}
+      <div class="dressup__stage">
+        <img class="dressup__photo" id="dressup-photo" alt="">
+        <div class="dressup__overlay" id="dressup-overlay" hidden>
+          <span class="spinner" aria-hidden="true"></span>
+          <p class="dressup__legend" id="dressup-legend"></p>
         </div>
-        <div class="figurita__row figurita__row--jersey">
-          ${arrowHTML('jersey', -1, 'Camiseta anterior')}
-          <div class="figurita__jersey"><img id="dressup-jersey" alt=""></div>
-          ${arrowHTML('jersey', 1, 'Camiseta siguiente')}
-        </div>
+      </div>
+      <div class="dressup__controls">
+        ${showPlayerPicker
+          ? `<div class="chip-row" id="dressup-players" role="group" aria-label="Jugador">
+              ${HERO_PLAYERS.map((p, i) => `<button type="button" class="chip${i === 0 ? ' is-on' : ''}" data-id="${p.id}">${esc(p.name)}</button>`).join('')}
+            </div>`
+          : `<p class="dressup__player-name">${esc(player.name)}</p>`}
+        <div class="chip-row" id="dressup-seasons" role="group" aria-label="Temporada"></div>
       </div>
     </div>`;
 }
@@ -35,42 +42,76 @@ export function mountDressUp() {
   const root = qs('#dressup');
   if (!root) return;
 
-  const faceImg = qs('#dressup-face', root);
-  const jerseyImg = qs('#dressup-jersey', root);
+  const photo = qs('#dressup-photo', root);
+  const overlay = qs('#dressup-overlay', root);
+  const legend = qs('#dressup-legend', root);
+  const seasonRow = qs('#dressup-seasons', root);
+  const playerRow = qs('#dressup-players', root);
 
-  let playerIndex = 0;
-  let jerseyIndex = 0;
+  let player = HERO_PLAYERS[0];
+  let seasonIndex = 0;
+  let legendTimer = null;
+  let requestToken = 0;
 
-  const renderPlayer = () => {
-    const player = PLAYERS[playerIndex];
-    faceImg.src = player.src;
-    faceImg.alt = player.name;
+  const preload = (src) =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.onload = resolve;
+      img.onerror = resolve;
+      img.src = src;
+    });
+
+  const paintSeasons = () => {
+    seasonRow.innerHTML = player.seasons
+      .map((s, i) => `<button type="button" class="chip${i === seasonIndex ? ' is-on' : ''}" data-i="${i}">${s.year}</button>`)
+      .join('');
   };
 
-  const renderJersey = async () => {
-    const jersey = JERSEYS[jerseyIndex];
+  const showSeason = async () => {
+    const token = ++requestToken;
+    const season = player.seasons[seasonIndex];
+
+    clearInterval(legendTimer);
+    let i = 0;
+    legend.textContent = LEGENDS[0];
+    legendTimer = setInterval(() => {
+      i = (i + 1) % LEGENDS.length;
+      legend.textContent = LEGENDS[i];
+    }, 900);
+    overlay.hidden = false;
     root.classList.add('is-loading');
-    try {
-      jerseyImg.src = await cutoutBackground(jersey.src, { tolerance: jersey.tolerance });
-    } catch {
-      jerseyImg.src = jersey.src;
-    } finally {
-      root.classList.remove('is-loading');
-    }
-    jerseyImg.alt = `Camiseta ${jersey.label}`;
+
+    const delay = 2000 + Math.random() * 3000;
+    await Promise.all([preload(season.src), new Promise((resolve) => setTimeout(resolve, delay))]);
+    if (token !== requestToken) return;
+
+    clearInterval(legendTimer);
+    photo.src = season.src;
+    photo.alt = `${player.name} con la camiseta de ${season.year}`;
+    overlay.hidden = true;
+    root.classList.remove('is-loading');
   };
 
-  renderPlayer();
-  renderJersey();
+  paintSeasons();
+  showSeason();
 
-  on(root, 'click', '.dressup__arrow', (event, btn) => {
-    const dir = Number(btn.dataset.dir);
-    if (btn.dataset.role === 'player') {
-      playerIndex = (playerIndex + dir + PLAYERS.length) % PLAYERS.length;
-      renderPlayer();
-    } else {
-      jerseyIndex = (jerseyIndex + dir + JERSEYS.length) % JERSEYS.length;
-      renderJersey();
-    }
+  on(seasonRow, 'click', '.chip', (event, btn) => {
+    const i = Number(btn.dataset.i);
+    if (i === seasonIndex) return;
+    seasonIndex = i;
+    qsa('.chip', seasonRow).forEach((c) => c.classList.toggle('is-on', c === btn));
+    showSeason();
   });
+
+  if (playerRow) {
+    on(playerRow, 'click', '.chip', (event, btn) => {
+      const found = HERO_PLAYERS.find((p) => p.id === btn.dataset.id);
+      if (!found || found === player) return;
+      player = found;
+      seasonIndex = 0;
+      qsa('.chip', playerRow).forEach((c) => c.classList.toggle('is-on', c === btn));
+      paintSeasons();
+      showSeason();
+    });
+  }
 }

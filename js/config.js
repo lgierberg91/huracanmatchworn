@@ -16,9 +16,8 @@ export const ADMIN_FN_URL = `${SUPABASE_URL}/functions/v1/admin-users`;
 export const CREST_DIR = 'assets/clubs';
 export const HURACAN_CREST = `${CREST_DIR}/huracan.png`;
 
-/** Carpetas del "vestidor" (probador de camisetas). Ver js/data/dressup.js. */
-export const JERSEY_DIR = 'assets/camisetas';
-export const PLAYER_DIR = 'assets/jugadores';
+/** Carpeta del "vestidor" del hero (fotos pre-generadas con IA). Ver js/data/dressup.js. */
+export const HERO_DIR = 'assets/hero';
 
 export const FIRST_YEAR = 1973;
 
