@@ -16,9 +16,6 @@ function arrowHTML(role, dir, label) {
 
 export function dressUpHTML() {
   return `<div class="hero__piece dressup" id="dressup">
-      <div class="hero__piece-label">
-        <span class="eyebrow eyebrow--dark">Armá tu jugador</span>
-      </div>
       <div class="figurita">
         <div class="figurita__row figurita__row--player">
           ${arrowHTML('player', -1, 'Jugador anterior')}
