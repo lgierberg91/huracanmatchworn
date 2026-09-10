@@ -51,22 +51,25 @@
 .hero__piece.dressup{ justify-items: center; text-align: center; }
 
 .figurita{
-  position: relative; width: min(220px, 100%);
-  display: grid; gap: 16px; justify-items: center;
+  position: relative; width: min(280px, 100%);
+  display: grid; justify-items: center;
   transition: opacity var(--t-fast) var(--ease);
 }
 .figurita.is-loading{ opacity: .6; }
 .figurita__photo{
-  width: 128px; height: 128px; border-radius: 50%; overflow: hidden;
-  background: #fff; border: 3px solid #fff; box-shadow: 0 12px 30px -14px rgba(0,0,0,.35);
+  position: relative; z-index: 2; margin-bottom: -16px;
+  width: 116px; height: 116px; border-radius: 50%; overflow: hidden;
+  background: #fff; border: 3px solid #fff; box-shadow: 0 10px 20px -12px rgba(0,0,0,.35);
 }
 .figurita__photo img{ width: 100%; height: 100%; object-fit: cover; object-position: top center; }
 .figurita__jersey{
-  width: 100%; min-height: 150px; display: grid; place-items: center;
-  background: #fff; border-radius: var(--r-lg); padding: 14px;
-  box-shadow: 0 12px 30px -14px rgba(0,0,0,.35);
+  position: relative; z-index: 1;
+  width: 100%; display: grid; place-items: center;
 }
-.figurita__jersey img{ max-width: 84%; max-height: 150px; object-fit: contain; }
+.figurita__jersey img{
+  width: 84%; max-height: 280px; object-fit: contain;
+  filter: drop-shadow(0 18px 22px rgba(0,0,0,.28));
+}
 
 .dressup__controls{ display: grid; gap: 10px; width: 100%; }
 .dressup__control{
