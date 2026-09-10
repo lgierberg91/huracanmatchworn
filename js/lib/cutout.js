@@ -1,9 +1,13 @@
 /**
- * Recorte automático del fondo de una foto de producto (camiseta sobre fondo
- * liso). Rellena por inundación desde los bordes de la imagen: cualquier
- * píxel conectado al borde y parecido en color al fondo se vuelve transparente.
- * Como el diseño de la camiseta (letras, escudo) está rodeado de tela y no
- * toca el borde, queda intacto aunque comparta tonos claros con el fondo.
+ * Recorte automático del fondo de una foto (camiseta de producto o retrato).
+ * Inundación en cadena desde los bordes: cada píxel se compara con el vecino
+ * que lo "descubrió" (no con un color de fondo fijo), así que tolera fondos
+ * con degradé o textura leve además de los lisos. El diseño/rostro no toca
+ * el borde de la imagen, así que queda intacto aunque comparta tonos con el fondo.
+ *
+ * No es una segmentación real: un fondo con mucho detalle (tribuna, multitud)
+ * no se puede limpiar del todo con esta técnica; para esos casos conviene
+ * partir de una foto con fondo más parejo.
  */
 
 const cache = new Map();
@@ -18,8 +22,9 @@ function loadImage(src) {
   });
 }
 
-export async function cutoutBackground(src, { tolerance = 32 } = {}) {
-  if (cache.has(src)) return cache.get(src);
+export async function cutoutBackground(src, { tolerance = 30 } = {}) {
+  const key = `${src}::${tolerance}`;
+  if (cache.has(key)) return cache.get(key);
 
   const promise = loadImage(src).then((img) => {
     const width = img.naturalWidth;
@@ -32,46 +37,47 @@ export async function cutoutBackground(src, { tolerance = 32 } = {}) {
 
     const imageData = ctx.getImageData(0, 0, width, height);
     const data = imageData.data;
-
-    let br = 0, bg = 0, bb = 0, n = 0;
-    for (let x = 0; x < width; x++) {
-      for (const y of [0, height - 1]) {
-        const i = (y * width + x) * 4;
-        br += data[i]; bg += data[i + 1]; bb += data[i + 2]; n++;
-      }
-    }
-    br /= n; bg /= n; bb /= n;
-
     const visited = new Uint8Array(width * height);
-    const stack = [];
     const tol2 = tolerance * tolerance;
+    const stack = [];
 
-    const visit = (x, y) => {
+    const clear = (x, y, i) => {
+      visited[y * width + x] = 1;
+      data[i + 3] = 0;
+      stack.push(x, y, data[i], data[i + 1], data[i + 2]);
+    };
+
+    const tryVisit = (x, y, pr, pg, pb) => {
       if (x < 0 || y < 0 || x >= width || y >= height) return;
       const idx = y * width + x;
       if (visited[idx]) return;
-      visited[idx] = 1;
       const i = idx * 4;
-      const dr = data[i] - br, dg = data[i + 1] - bg, db = data[i + 2] - bb;
-      if (dr * dr + dg * dg + db * db <= tol2) {
-        data[i + 3] = 0;
-        stack.push(x, y);
-      }
+      const dr = data[i] - pr, dg = data[i + 1] - pg, db = data[i + 2] - pb;
+      if (dr * dr + dg * dg + db * db <= tol2) clear(x, y, i);
+      else visited[idx] = 1;
     };
 
-    for (let x = 0; x < width; x++) { visit(x, 0); visit(x, height - 1); }
-    for (let y = 0; y < height; y++) { visit(0, y); visit(width - 1, y); }
+    for (let x = 0; x < width; x++) {
+      clear(x, 0, (0 * width + x) * 4);
+      clear(x, height - 1, ((height - 1) * width + x) * 4);
+    }
+    for (let y = 0; y < height; y++) {
+      clear(0, y, (y * width + 0) * 4);
+      clear(width - 1, y, (y * width + (width - 1)) * 4);
+    }
 
     while (stack.length) {
-      const y = stack.pop();
-      const x = stack.pop();
-      visit(x + 1, y); visit(x - 1, y); visit(x, y + 1); visit(x, y - 1);
+      const pb = stack.pop(), pg = stack.pop(), pr = stack.pop(), y = stack.pop(), x = stack.pop();
+      tryVisit(x + 1, y, pr, pg, pb);
+      tryVisit(x - 1, y, pr, pg, pb);
+      tryVisit(x, y + 1, pr, pg, pb);
+      tryVisit(x, y - 1, pr, pg, pb);
     }
 
     ctx.putImageData(imageData, 0, 0);
     return canvas.toDataURL('image/png');
   });
 
-  cache.set(src, promise);
+  cache.set(key, promise);
   return promise;
 }

@@ -5,43 +5,18 @@
 
 import { esc } from '../lib/dom.js';
 import { icon } from '../lib/icons.js';
-import { dateLong, dateMedium, num, plural, yearsAgo, venueLong, decadeLabel } from '../lib/format.js';
+import { dateLong, dateMedium, num, plural, yearsAgo, decadeLabel } from '../lib/format.js';
 import {
-  globalStats, featured, pieceOfTheDay, onThisDay, latestPlayed, nextFixtures, facetCounts,
+  globalStats, featured, onThisDay, latestPlayed, nextFixtures, facetCounts,
 } from '../data/store.js';
 import { crestHTML } from '../components/crest.js';
 import { jerseyHTML } from '../components/jersey.js';
-import { scorelineHTML } from '../components/scoreline.js';
 import { matchCardHTML, matchHref } from '../components/matchCard.js';
 import { sectionHead, statHTML } from '../components/ui.js';
-import { photoUrl } from '../data/api.js';
 import { clubShort } from '../data/clubs.js';
 import { dressUpHTML, mountDressUp } from '../components/dressup.js';
 
-function heroPieceHTML(match) {
-  if (!match) return '';
-  const stage = match.kitPhoto
-    ? `<img class="piece-photo" src="${esc(photoUrl(match.kitPhoto))}" alt="Camiseta ante ${esc(match.club.name)}">`
-    : crestHTML(match.club, 'hero', { onDark: true, eager: true });
-
-  return `<a class="hero__piece" href="${matchHref(match)}">
-      <div class="hero__piece-label">
-        <span class="eyebrow eyebrow--dark">Pieza del día</span>
-        ${match.highlightReason ? `<span class="chip chip--onDark">${esc(match.highlightReason)}</span>` : ''}
-      </div>
-      <div class="hero__piece-stage">${stage}</div>
-      <div class="hero__piece-row">
-        ${scorelineHTML(match, { size: 'md', crest: 'sm', onDark: true })}
-      </div>
-      <div class="hero__piece-meta mono">
-        <span><strong>${esc(dateLong(match.date))}</strong></span>
-        <span>${esc(match.competition)}${match.roundLabel ? ` · ${esc(match.roundLabel)}` : ''}</span>
-        <span>${esc(venueLong(match.venue))}</span>
-      </div>
-    </a>`;
-}
-
-function heroHTML(stats, piece) {
+function heroHTML(stats) {
   return `<section class="hero">
       <div class="shell hero__grid">
         <div>
@@ -60,7 +35,7 @@ function heroHTML(stats, piece) {
             ${statHTML({ value: stats.withKit, label: 'Camisetas', note: stats.withKit ? '' : 'todavía ninguna' })}
           </div>
         </div>
-        ${heroPieceHTML(piece)}
+        ${dressUpHTML()}
       </div>
     </section>`;
 }
@@ -214,10 +189,8 @@ function contributeHTML(stats) {
 
 export function renderHome() {
   const stats = globalStats();
-  const piece = pieceOfTheDay();
 
-  return `${heroHTML(stats, piece)}
-    ${dressUpHTML()}
+  return `${heroHTML(stats)}
     ${ribbonHTML()}
     ${onThisDayHTML()}
     ${featuredHTML()}
