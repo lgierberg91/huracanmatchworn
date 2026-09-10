@@ -78,6 +78,7 @@ button.chip:hover{ border-color: var(--line-2); color: var(--ink); }
 .chip__count{ opacity: .55; font-size: .92em; }
 .chip .crest{ margin-inline-start: -4px; }
 
+.chip svg{ width: 13px; height: 13px; flex: none; }
 .chip--static{ pointer-events: none; }
 .chip--red{ color: var(--red); border-color: color-mix(in srgb, var(--red) 34%, transparent); background: var(--red-tint); }
 .chip--gold{ color: var(--gold); border-color: color-mix(in srgb, var(--gold) 38%, transparent); background: var(--gold-tint); }

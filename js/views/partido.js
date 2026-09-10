@@ -37,30 +37,23 @@ const wash = (match) => {
 function heroHTML(match) {
   const huracanFirst = match.venue !== 'A';
   const rivalSide = `
-    <div class="matchup__side">
-      ${crestHTML(match.club, 'hero', { onDark: true, eager: true })}
-      <a class="matchup__name" href="#/rival/${esc(match.club.id)}">${esc(match.club.name)}</a>
-    </div>`;
+    <a class="mini-vs__side" href="#/rival/${esc(match.club.id)}">
+      ${crestHTML(match.club, 'sm', { onDark: true, eager: true })}
+      <span>${esc(clubShort(match.club))}</span>
+    </a>`;
   const huracanSide = `
-    <div class="matchup__side">
-      ${crestHTML(HURACAN, 'hero', { onDark: true, eager: true })}
-      <span class="matchup__name">Huracán</span>
-    </div>`;
+    <span class="mini-vs__side mini-vs__side--self">
+      ${crestHTML(HURACAN, 'sm', { onDark: true, eager: true })}
+      <span>Huracán</span>
+    </span>`;
 
   const score = match.played
-    ? (huracanFirst
-        ? `${match.gf}<span>–</span>${match.ga}`
-        : `${match.ga}<span>–</span>${match.gf}`)
-    : 'A jugarse';
+    ? (huracanFirst ? `${match.gf}–${match.ga}` : `${match.ga}–${match.gf}`)
+    : '—';
 
-  const halftime =
-    match.ht_gf != null && match.ht_ga != null
-      ? `<div class="matchup__ht mono">Entretiempo ${huracanFirst ? `${match.ht_gf}–${match.ht_ga}` : `${match.ht_ga}–${match.ht_gf}`}</div>`
-      : '';
-
-  return `<section class="match-hero" style="${wash(match)}">
-      <div class="shell match-hero__inner">
-        <div class="match-hero__top">
+  return `<section class="match-strip" style="${wash(match)}">
+      <div class="shell match-strip__inner">
+        <div class="match-strip__top">
           <a class="backlink backlink--onDark" href="#/temporada/${match.year}">${icon('arrowLeft')} Temporada ${match.year}</a>
           <div style="display:flex;gap:8px;align-items:center">
             <button type="button" class="fav-btn${isFavorite(match.id) ? ' is-on' : ''}" id="fav-btn"
@@ -69,25 +62,19 @@ function heroHTML(match) {
           </div>
         </div>
 
-        <div class="match-hero__comp" style="justify-content:center;margin-bottom:22px">
-          <span class="chip chip--onDark">${esc(match.family.label)}</span>
-          <span class="chip chip--onDark">${esc(match.edition)}</span>
-          ${match.roundLabel ? `<span class="chip chip--onDark">${esc(match.roundLabel)}</span>` : ''}
-        </div>
-
-        <div class="matchup">
+        <div class="mini-vs">
           ${huracanFirst ? huracanSide : rivalSide}
-          <div>
-            <div class="matchup__score mono${match.played ? '' : ' matchup__score--pending'}">${score}</div>
-            ${halftime}
-          </div>
+          <span class="mini-vs__score mono${match.played ? '' : ' mini-vs__score--pending'}">${score}</span>
           ${huracanFirst ? rivalSide : huracanSide}
+          ${match.result ? `<span class="res res--${resultClass(match.result)} mini-vs__res">${esc(resultLong(match.result))}</span>` : ''}
         </div>
 
-        <div class="match-hero__foot">
-          <span class="chip chip--onDark">${icon('calendar')} ${esc(dateLong(match.date))}</span>
-          <span class="chip chip--onDark">${icon('pin')} ${esc(venueLong(match.venue))}</span>
-          ${match.result ? `<span class="res res--${resultClass(match.result)}">${esc(resultLong(match.result))}</span>` : ''}
+        <div class="mini-vs__meta">
+          <span>${esc(dateLong(match.date))}</span>
+          <span>·</span>
+          <span>${esc(match.family.label)}${match.roundLabel ? ` · ${esc(match.roundLabel)}` : ''}</span>
+          <span>·</span>
+          <span>${esc(venueLong(match.venue))}</span>
         </div>
       </div>
     </section>`;
@@ -95,83 +82,58 @@ function heroHTML(match) {
 
 function kitSectionHTML(match) {
   const hasPhoto = Boolean(match.kitPhoto);
+  const videoId = youtubeId(match.youtube_url);
   const stage = hasPhoto
     ? `<img src="${esc(photoUrl(match.kitPhoto))}" alt="Camiseta usada ante ${esc(match.club.name)}">`
-    : jerseyHTML({ size: 150, label: 'Camiseta sin identificar' });
+    : jerseyHTML({ size: 220, label: 'Camiseta sin identificar' });
+
+  const videoBadge =
+    videoId || match.youtube_url
+      ? `<a class="kit-hero__video" href="${esc(match.youtube_url)}" target="_blank" rel="noopener" title="Ver el partido en YouTube">
+          ${icon('play')} Ver video
+        </a>`
+      : '';
 
   const caption = match.kitDescription
-    ? `<div>
-        <strong style="display:block;font-size:1.05rem">${esc(match.kitDescription)}</strong>
-        ${match.patch_note ? `<span class="stat__note">${esc(match.patch_note)}</span>` : ''}
-      </div>`
-    : `<div>
-        <strong style="display:block;font-size:1.05rem;color:var(--ink-3)">Camiseta sin identificar</strong>
-        <span class="stat__note">Nadie cargó todavía cuál se usó esa tarde.</span>
-      </div>`;
+    ? `<h1 class="kit-title">${esc(match.kitDescription)}</h1>
+       ${match.patch_note ? `<p class="kit-sub">${esc(match.patch_note)}</p>` : ''}`
+    : `<h1 class="kit-title kit-title--muted">Camiseta sin identificar</h1>
+       <p class="kit-sub">Nadie cargó todavía cuál se usó esa tarde.</p>`;
 
   const meta = [
-    match.player && ['Jugador', match.player],
     match.kitType && ['Tipo', match.kitType],
+    match.player && ['Jugador', match.player],
   ].filter(Boolean);
 
-  return `<section class="reveal">
-      ${sectionHead({ eyebrow: 'La pieza', title: 'La camiseta' })}
-      <div class="kit-stage">${stage}</div>
+  return `<section class="reveal kit-section">
+      <div class="kit-hero">
+        <div class="kit-hero__stage">${stage}${videoBadge}</div>
+      </div>
+      <div id="photo-gallery" class="kit-hero__filmstrip"></div>
       <div class="kit-caption">
         ${caption}
         ${meta.length ? `<div class="chip-row">${meta.map(([k, v]) => `<span class="chip chip--static">${esc(k)}: ${esc(v)}</span>`).join('')}</div>` : ''}
       </div>
-      <div id="photo-gallery"></div>
       <div style="margin-top:18px">${contributeHTML(match)}</div>
     </section>`;
 }
 
 function storySectionHTML(match) {
-  const videoId = youtubeId(match.youtube_url);
-  if (!match.story_text && !videoId && !match.youtube_url) return '';
-
-  return `<section class="reveal" style="margin-top:clamp(30px,4vw,48px)">
-      ${sectionHead({ eyebrow: 'El partido', title: 'Qué pasó ese día' })}
-      ${match.story_text ? `<p class="story">${esc(match.story_text)}</p>` : ''}
-      ${videoId
-        ? `<div class="yt-embed" style="margin-top:20px">
-            <iframe src="https://www.youtube-nocookie.com/embed/${esc(videoId)}" title="Video del partido"
-              loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen></iframe>
-          </div>`
-        : match.youtube_url
-          ? `<a class="btn btn--ghost btn--sm" style="margin-top:16px" href="${esc(match.youtube_url)}" target="_blank" rel="noopener">
-              ${icon('play')} Ver en YouTube</a>`
-          : ''}
-    </section>`;
+  if (!match.story_text) return '';
+  return `<p class="story reveal">${esc(match.story_text)}</p>`;
 }
 
-function dataPanelHTML(match) {
-  const rows = [
-    ['Fecha', esc(dateLong(match.date))],
-    ['Temporada', `<a href="#/temporada/${match.year}">${match.year}</a>`],
-    ['Competencia', esc(match.competition)],
-    match.roundLabel && ['Instancia', esc(match.roundLabel)],
-    ['Rival', `<a href="#/rival/${esc(match.club.id)}">${esc(match.club.name)}</a>`],
-    ['Condición', esc(venueLong(match.venue))],
-    match.played && ['Resultado', `${esc(resultLong(match.result))} ${match.gf}–${match.ga}`],
-    match.ht_gf != null && ['Entretiempo', `${match.ht_gf}–${match.ht_ga}`],
-    match.player && ['Jugador', esc(match.player)],
-    match.scorersList.length && ['Goles', match.scorersList.map(esc).join(', ')],
+function factsStripHTML(match) {
+  const chips = [
+    `${icon('calendar')}${esc(dateLong(match.date))}`,
+    `${icon('pin')}${esc(venueLong(match.venue))}`,
+    `<a href="#/temporada/${match.year}">Temporada ${match.year}</a>`,
+    match.ht_gf != null && `Entretiempo ${match.ht_gf}–${match.ht_ga}`,
+    match.scorersList.length && `Goles: ${match.scorersList.map(esc).join(', ')}`,
   ].filter(Boolean);
 
-  return `<div class="panel reveal">
-      <div class="panel__title">Ficha</div>
-      <div class="datalist">
-        ${rows
-          .map(
-            ([key, value]) => `<div class="datalist__row">
-              <span class="datalist__key">${esc(key)}</span>
-              <span class="datalist__val">${value}</span>
-            </div>`
-          )
-          .join('')}
-      </div>
+  return `<div class="facts-strip reveal">
+      ${chips.map((html) => `<span class="chip chip--static">${html}</span>`).join('')}
     </div>`;
 }
 
@@ -180,17 +142,17 @@ function rivalPanelHTML(match) {
   if (!entry) return '';
   const balance = record(entry.matches);
 
-  return `<div class="panel reveal" style="margin-top:clamp(16px,2vw,22px)">
+  return `<div class="panel panel--flat reveal">
       <div class="panel__title">Historial ante ${esc(clubShort(match.club))}</div>
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-        ${crestHTML(match.club, 'md')}
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+        ${crestHTML(match.club, 'sm')}
         <div>
-          <strong style="display:block">${esc(match.club.name)}</strong>
+          <strong style="display:block;font-size:var(--fs-sm)">${esc(match.club.name)}</strong>
           <span class="stat__note">${plural(entry.matches.length, 'partido', 'partidos')} en el archivo</span>
         </div>
       </div>
       ${splitBarHTML(balance)}
-      <a class="btn btn--ghost btn--sm btn--block" style="margin-top:16px" href="#/rival/${esc(match.club.id)}">
+      <a class="btn btn--ghost btn--sm btn--block" style="margin-top:14px" href="#/rival/${esc(match.club.id)}">
         Ver historial completo ${icon('arrowRight')}
       </a>
     </div>`;
@@ -203,7 +165,7 @@ function neighboursHTML(match) {
   const next = index >= 0 && index < season.length - 1 ? season[index + 1] : null;
   if (!prev && !next) return '';
 
-  return `<div class="panel reveal" style="margin-top:clamp(16px,2vw,22px)">
+  return `<div class="panel panel--flat reveal">
       <div class="panel__title">En la temporada</div>
       ${prev ? matchRowHTML(prev) : ''}
       ${next ? matchRowHTML(next) : ''}
@@ -245,18 +207,15 @@ export function renderPartido(ctx) {
       </div>`;
   }
 
+  const secondary = [rivalPanelHTML(match), neighboursHTML(match)].filter(Boolean);
+
   return `${heroHTML(match)}
     <div class="match-body">
       <div class="shell match-layout">
-        <div>
-          ${kitSectionHTML(match)}
-          ${storySectionHTML(match)}
-        </div>
-        <aside>
-          ${dataPanelHTML(match)}
-          ${rivalPanelHTML(match)}
-          ${neighboursHTML(match)}
-        </aside>
+        ${kitSectionHTML(match)}
+        ${factsStripHTML(match)}
+        ${storySectionHTML(match)}
+        ${secondary.length ? `<div class="match-secondary">${secondary.join('')}</div>` : ''}
       </div>
     </div>
     ${relatedHTML(match)}

@@ -16,6 +16,7 @@ import { matchCardHTML, matchHref } from '../components/matchCard.js';
 import { sectionHead, statHTML } from '../components/ui.js';
 import { photoUrl } from '../data/api.js';
 import { clubShort } from '../data/clubs.js';
+import { dressUpHTML, mountDressUp } from '../components/dressup.js';
 
 function heroPieceHTML(match) {
   if (!match) return '';
@@ -204,7 +205,6 @@ function contributeHTML(stats) {
               desde la ficha — sin cuenta ni registro.</p>
             <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap">
               <a class="btn btn--primary" href="#/coleccion?sincamiseta=1&orden=highlight">${icon('camera')} Empezar a aportar</a>
-              <a class="btn btn--ghost" href="#/acerca">${icon('info')} Cómo funciona</a>
             </div>
           </div>
         </div>
@@ -217,6 +217,7 @@ export function renderHome() {
   const piece = pieceOfTheDay();
 
   return `${heroHTML(stats, piece)}
+    ${dressUpHTML()}
     ${ribbonHTML()}
     ${onThisDayHTML()}
     ${featuredHTML()}
@@ -224,5 +225,9 @@ export function renderHome() {
     ${decadesHTML()}
     ${latestHTML()}
     ${contributeHTML(stats)}`;
+}
+
+export function mountHome() {
+  mountDressUp();
 }
 

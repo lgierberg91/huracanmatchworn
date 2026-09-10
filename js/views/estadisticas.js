@@ -159,7 +159,6 @@ function archiveStatePanel(stats) {
         ${sectionHead({
           eyebrow: 'Estado del archivo',
           title: 'Qué falta cargar',
-          link: { href: '#/acerca', text: 'Cómo colaborar' },
         })}
         <div class="panel reveal">
           ${rows

@@ -4,22 +4,20 @@
 
 import { qs, qsa, observeReveals } from './lib/dom.js';
 
-import { renderHome } from './views/home.js';
+import { renderHome, mountHome } from './views/home.js';
 import { renderColeccion, mountColeccion } from './views/coleccion.js';
 import { renderHistoria } from './views/historia.js';
 import { renderTemporada } from './views/temporada.js';
 import { renderPartido, mountPartido } from './views/partido.js';
 import { renderRival } from './views/rival.js';
 import { renderEstadisticas } from './views/estadisticas.js';
-import { renderAcerca } from './views/acerca.js';
 import { renderAdmin, mountAdmin } from './views/admin.js';
 
 const ROUTES = [
-  { pattern: /^\/?$/, id: 'inicio', title: 'Huracán Matchworn', render: renderHome },
+  { pattern: /^\/?$/, id: 'inicio', title: 'Huracán Matchworn', render: renderHome, mount: mountHome },
   { pattern: /^\/coleccion$/, id: 'coleccion', title: 'La colección', render: renderColeccion, mount: mountColeccion },
   { pattern: /^\/historia$/, id: 'historia', title: 'Historia', render: renderHistoria },
   { pattern: /^\/estadisticas$/, id: 'estadisticas', title: 'Estadísticas', render: renderEstadisticas },
-  { pattern: /^\/acerca$/, id: 'acerca', title: 'Acerca de', render: renderAcerca },
   { pattern: /^\/admin$/, id: 'admin', title: 'Administración', render: renderAdmin, mount: mountAdmin },
   { pattern: /^\/temporada\/(?<year>\d{4})$/, id: 'historia', title: 'Temporada', render: renderTemporada },
   { pattern: /^\/partido\/(?<id>.+)$/, id: 'coleccion', title: 'Partido', render: renderPartido, mount: mountPartido },
