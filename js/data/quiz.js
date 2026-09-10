@@ -29,7 +29,7 @@ export const ANSWERS = {
 };
 
 /**
- * Zonas a tapar de cada foto, en porcentaje de la imagen: {x, y, w, h}.
+ * Zonas a tapar, en porcentaje DE LA CAMISETA (no de la foto): {x, y, w, h}.
  * El origen es la esquina superior izquierda.
  *
  * Si una camiseta no tiene zonas propias se usan las de abajo, que cubren los
@@ -40,10 +40,15 @@ export const MASKS = {
   // '2024': [{ x: 28, y: 40, w: 44, h: 15 }],
 };
 
-/** Pecho (sponsor) y pectoral derecho (marca). */
+/**
+ * En las camisetas de Huracán la marca va sobre el pecho izquierdo (visto de
+ * frente, a la izquierda) y el escudo del globo sobre el derecho. Se tapa la
+ * marca y el centro del pecho, donde va el sponsor — el escudo queda a la vista,
+ * porque es la pista que hace jugable la foto.
+ */
 export const DEFAULT_MASKS = [
-  { x: 26, y: 38, w: 48, h: 16 },
-  { x: 57, y: 24, w: 17, h: 10 },
+  { x: 16, y: 30, w: 68, h: 26 },  // pecho: sponsor
+  { x: 20, y: 10, w: 24, h: 14 },  // pecho izquierdo: marca
 ];
 
 export const masksFor = (kitId) => MASKS[kitId] || DEFAULT_MASKS;

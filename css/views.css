@@ -761,3 +761,66 @@ textarea.field{ resize: vertical; min-height: 88px; line-height: 1.5; }
   .quiz-layout{ grid-template-columns: 1fr; }
   .quiz-photo{ max-width: 380px; margin-inline: auto; }
 }
+
+/* ============================================================
+   Bandas rojas de cabecera — versión compacta
+   Antes ocupaban casi una pantalla y las cifras salían en negro sobre rojo.
+   Ahora son una franja baja, legible, que no le roba lugar al contenido.
+   ============================================================ */
+
+.kits-hero,
+.creator-hero,
+.quiz-hero,
+.skit-hero{
+  padding-block: clamp(22px, 3vw, 40px) clamp(20px, 2.6vw, 34px);
+}
+
+.kits-hero::before,
+.creator-hero::before,
+.quiz-hero::before,
+.skit-hero::before{
+  background:
+    radial-gradient(60% 120% at 88% -20%, rgba(255,255,255,.20) 0%, transparent 62%),
+    linear-gradient(180deg, transparent 55%, rgba(0,0,0,.10) 100%);
+}
+
+.kits-hero h1,
+.creator-hero h1,
+.quiz-hero h1{
+  font-size: clamp(1.5rem, 3.4vw, 2.5rem);
+  margin-top: 10px;
+}
+.kits-hero .lede,
+.creator-hero .lede,
+.quiz-hero .lede{ font-size: var(--fs-base); margin-top: 10px !important; }
+
+/* las cifras: blancas sobre el rojo, y más chicas */
+.kits-hero .hero__counts,
+.creator-hero .hero__counts,
+.skit-hero .hero__counts{
+  margin-top: 20px; padding-top: 16px;
+  border-top: 1px solid var(--line-dark);
+  gap: clamp(18px, 3vw, 34px);
+}
+.kits-hero .stat__value,
+.creator-hero .stat__value,
+.quiz-hero .stat__value,
+.skit-hero .stat__value{
+  color: var(--on-dark);
+  font-size: clamp(1.3rem, 2.4vw, 1.75rem);
+}
+.kits-hero .stat__label,
+.creator-hero .stat__label,
+.quiz-hero .stat__label,
+.skit-hero .stat__label{ color: var(--on-dark-3); }
+.kits-hero .stat__note,
+.creator-hero .stat__note,
+.quiz-hero .stat__note,
+.skit-hero .stat__note{ color: var(--on-dark-3); }
+
+/* la barra de décadas se pega justo debajo, sin aire muerto */
+.kitbar{ margin-bottom: 18px; }
+
+/* mientras se mide la camiseta, la foto se difumina: nunca se ve destapada */
+.quiz-photo.is-measuring img{ filter: blur(18px); }
+.quiz-photo img{ transition: filter var(--t-mid) var(--ease); }

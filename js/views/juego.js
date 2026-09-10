@@ -13,6 +13,7 @@ import { icon } from '../lib/icons.js';
 import { num } from '../lib/format.js';
 import { playableKits, fullyLoadedKits, buildRound, masksFor, matches, normalize } from '../data/quiz.js';
 import { SEASON_KITS } from '../data/seasonKits.js';
+import { shirtBounds, toPhotoSpace, renderedImageRect } from '../lib/shirtBounds.js';
 import { statHTML } from '../components/ui.js';
 import { jerseyHTML } from '../components/jersey.js';
 
@@ -32,17 +33,75 @@ const game = {
   revealed: false,
 };
 
+let maskObserver = null;
+let maskToken = 0;
+let painted = null;
+
 /* ---------------- pintado ---------------- */
 
 function photoHTML(kit) {
-  const masks = masksFor(kit.id);
-  return `<figure class="quiz-photo">
+  // Se pinta primero sin las zonas tapadas y se agregan apenas se mide la
+  // camiseta, para no mostrar recuadros en el lugar equivocado ni un instante.
+  return `<figure class="quiz-photo is-measuring">
       <img src="${esc(kit.src)}" alt="Camiseta a adivinar">
-      ${masks
-        .map((m) => `<span class="quiz-mask" style="left:${m.x}%;top:${m.y}%;width:${m.w}%;height:${m.h}%"></span>`)
-        .join('')}
     </figure>`;
 }
+
+/**
+ * Ubica las zonas tapadas sobre la camiseta de esta foto.
+ * Las zonas se definen en porcentaje de la prenda; acá se traducen a la imagen,
+ * que en cada foto viene con un encuadre distinto.
+ */
+async function applyMasks(kit) {
+  const token = ++maskToken;
+  const first = qs('.quiz-photo img');
+  if (!first) return;
+
+  const [box] = await Promise.all([
+    shirtBounds(kit.src),
+    first.decode().catch(() => {}),
+  ]);
+
+  // El panel se repinta en cada paso, así que hay que volver a buscar el marco:
+  // el que existía al empezar a medir puede haber quedado fuera de la pantalla.
+  if (token !== maskToken) return;
+  const figure = qs('.quiz-photo');
+  const img = figure && figure.querySelector('img');
+  if (!figure || !img) return;
+
+  const place = () => {
+    qsa('.quiz-mask', figure).forEach((m) => m.remove());
+    const frame = figure.getBoundingClientRect();
+    const rect = renderedImageRect(img);
+    const left = rect.left - frame.left;
+    const top = rect.top - frame.top;
+
+    figure.insertAdjacentHTML(
+      'beforeend',
+      masksFor(kit.id)
+        .map((m) => toPhotoSpace(m, box))
+        .map((m) => {
+          const x = left + (m.x / 100) * rect.width;
+          const y = top + (m.y / 100) * rect.height;
+          const w = (m.w / 100) * rect.width;
+          const h = (m.h / 100) * rect.height;
+          return `<span class="quiz-mask" style="left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px"></span>`;
+        })
+        .join('')
+    );
+  };
+
+  place();
+  figure.classList.remove('is-measuring');
+
+  // al cambiar el tamaño del marco, los recuadros se recolocan
+  if (maskObserver) maskObserver.disconnect();
+  if ('ResizeObserver' in window) {
+    maskObserver = new ResizeObserver(place);
+    maskObserver.observe(figure);
+  }
+}
+
 
 function seasonGridHTML(step) {
   // se ofrecen todas las temporadas del archivo que tengan camiseta, más las correctas
@@ -123,7 +182,13 @@ function paint() {
   if (!panel) return;
   panel.innerHTML = panelHTML();
   if (board) board.innerHTML = scoreboardHTML();
-  if (photo) photo.innerHTML = photoHTML(game.round.kit);
+  // La foto sólo se rehace al cambiar de camiseta: si se repintara en cada paso
+  // volvería a medirse y parpadearía el difuminado en cada respuesta.
+  if (photo && painted !== game.round.kit.id) {
+    painted = game.round.kit.id;
+    photo.innerHTML = photoHTML(game.round.kit);
+    applyMasks(game.round.kit);
+  }
   const input = qs('#q-input');
   if (input) input.focus();
 }
@@ -298,6 +363,7 @@ export function mountJuego() {
   game.correct = 0;
   game.streak = 0;
   game.bestStreak = 0;
+  painted = null;
   loadRound(game.pool[0].id);
 
   const panel = qs('#quiz-panel');
