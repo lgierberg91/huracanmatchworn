@@ -4,7 +4,7 @@
  * Jerarquía: qué camiseta es + quién la usó + contra quién + cuándo + qué pasó.
  */
 
-import { esc, qs, qsa, on, toast, observeReveals } from '../lib/dom.js';
+import { esc, qs, on, toast, observeReveals } from '../lib/dom.js';
 import { icon } from '../lib/icons.js';
 import { dateLong, venueLong, resultLong, resultClass, plural, dateMedium } from '../lib/format.js';
 import { getMatch, matchesOfYear, clubEntry, record } from '../data/store.js';
@@ -81,11 +81,6 @@ function heroHTML(match) {
     </section>`;
 }
 
-const KIT_ROLES = [
-  ['player', 'Jugador'],
-  ['goalkeeper', 'Arquero'],
-];
-
 /**
  * Frente y dorso de una camiseta oficial (jugador o arquero).
  * Sin datos oficiales: si hay una foto aportada por hinchas, se muestra ésa.
@@ -124,7 +119,8 @@ function kitMetaHTML(kit) {
   return chips.length ? `<div class="chip-row">${chips.join('')}</div>` : '';
 }
 
-function kitSectionHTML(match) {
+/** Camiseta protagonista, a todo el ancho de pantalla. */
+function kitStageHTML(match) {
   const hasPhoto = Boolean(match.kitPhoto);
   const videoId = youtubeId(match.youtube_url);
   const placeholderStage = hasPhoto
@@ -138,24 +134,22 @@ function kitSectionHTML(match) {
         </a>`
       : '';
 
-  return `<section class="reveal kit-section">
-      <div class="kit-hero">
-        <div class="kit-switch" id="kit-switch" hidden>
-          ${KIT_ROLES.map(([role, label], i) => `<button type="button" class="kit-switch__btn${i === 0 ? ' is-on' : ''}" data-role="${role}">${label}</button>`).join('')}
-        </div>
-        <div class="kit-hero__body">
-          <div class="kit-hero__stage" id="kit-stage">${placeholderStage}</div>
-          <div id="photo-gallery" class="kit-hero__side"></div>
-        </div>
-        ${videoBadge}
-      </div>
-      <div class="kit-caption">
-        <div id="kit-caption">${kitCaptionHTML(match.kitDescription, match.patch_note)}</div>
-        <div id="kit-meta"></div>
-      </div>
-      <div style="margin-top:18px">${kitEditorHTML()}</div>
-      <div style="margin-top:18px">${contributeHTML(match)}</div>
-    </section>`;
+  return `<div class="kit-hero">
+      <button type="button" class="icon-btn kit-role-btn" id="kit-role-btn" title="Ver camiseta de arquero" aria-label="Ver camiseta de arquero">${icon('glove')}</button>
+      <div class="kit-hero__stage" id="kit-stage">${placeholderStage}</div>
+      ${videoBadge}
+    </div>
+    <div id="photo-gallery" class="kit-gallery"></div>`;
+}
+
+/** Título, datos (marca/parche/publicidades) y formularios de aporte, en el ancho angosto habitual. */
+function kitInfoHTML(match) {
+  return `<div class="kit-caption">
+      <div id="kit-caption">${kitCaptionHTML(match.kitDescription, match.patch_note)}</div>
+      <div id="kit-meta"></div>
+    </div>
+    <div style="margin-top:18px">${kitEditorHTML()}</div>
+    <div style="margin-top:18px">${contributeHTML(match)}</div>`;
 }
 
 function storySectionHTML(match) {
@@ -251,8 +245,9 @@ export function renderPartido(ctx) {
 
   return `${heroHTML(match)}
     <div class="match-body">
+      <section class="shell kit-shell reveal">${kitStageHTML(match)}</section>
       <div class="shell match-layout">
-        ${kitSectionHTML(match)}
+        <section class="kit-section reveal">${kitInfoHTML(match)}</section>
         ${factsStripHTML(match)}
         ${storySectionHTML(match)}
         ${secondary.length ? `<div class="match-secondary">${secondary.join('')}</div>` : ''}
@@ -300,13 +295,12 @@ export function mountPartido(ctx, rerender) {
 
   /* camiseta protagonista: oficial (jugador/arquero) o, si no hay, la primera foto aportada */
   const kitStage = qs('#kit-stage');
-  const kitSwitch = qs('#kit-switch');
+  const kitRoleBtn = qs('#kit-role-btn');
   const kitCaption = qs('#kit-caption');
   const kitMeta = qs('#kit-meta');
   const gallery = qs('#photo-gallery');
 
   let activeRole = 'player';
-  let switchWired = false;
   let currentByRole = new Map();
   let fanPhotos = [];
 
@@ -319,7 +313,20 @@ export function mountPartido(ctx, rerender) {
       kitCaption.innerHTML = kitCaptionHTML((kit && kit.description) || match.kitDescription, match.patch_note);
     }
     if (kitMeta) kitMeta.innerHTML = kitMetaHTML(kit);
+    if (kitRoleBtn) {
+      const isPlayer = activeRole === 'player';
+      kitRoleBtn.innerHTML = icon(isPlayer ? 'glove' : 'boot');
+      kitRoleBtn.title = `Ver camiseta de ${isPlayer ? 'arquero' : 'jugador'}`;
+      kitRoleBtn.setAttribute('aria-label', kitRoleBtn.title);
+    }
   };
+
+  if (kitRoleBtn) {
+    kitRoleBtn.addEventListener('click', () => {
+      activeRole = activeRole === 'player' ? 'goalkeeper' : 'player';
+      paint();
+    });
+  }
 
   if (kitStage) {
     const refreshKitStage = () =>
@@ -327,22 +334,8 @@ export function mountPartido(ctx, rerender) {
         .then((kits) => {
           currentByRole = new Map(kits.map((k) => [k.role, k]));
 
-          if (!currentByRole.has(activeRole)) {
-            activeRole = currentByRole.has('player') ? 'player' : [...currentByRole.keys()][0] || activeRole;
-          }
-
-          if (currentByRole.size > 1) {
-            kitSwitch.hidden = false;
-            qsa('.kit-switch__btn', kitSwitch).forEach((b) => b.classList.toggle('is-on', b.dataset.role === activeRole));
-            if (!switchWired) {
-              switchWired = true;
-              on(kitSwitch, 'click', '.kit-switch__btn', (event, btn) => {
-                if (!currentByRole.has(btn.dataset.role) || btn.dataset.role === activeRole) return;
-                activeRole = btn.dataset.role;
-                qsa('.kit-switch__btn', kitSwitch).forEach((b) => b.classList.toggle('is-on', b === btn));
-                paint();
-              });
-            }
+          if (!currentByRole.has(activeRole) && currentByRole.size) {
+            activeRole = currentByRole.has('player') ? 'player' : [...currentByRole.keys()][0];
           }
 
           paint();
@@ -355,7 +348,7 @@ export function mountPartido(ctx, rerender) {
     mountKitEditor(match, refreshKitStage);
   }
 
-  /* fotos aportadas por hinchas, en el lateral de la camiseta */
+  /* fotos aportadas por hinchas, debajo de la camiseta */
   if (gallery) {
     fetchPhotos(match.id)
       .then((photos) => {
