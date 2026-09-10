@@ -186,8 +186,8 @@
 
 .year-list{ display: grid; gap: 8px; }
 .year-row{
-  display: grid; align-items: center; gap: clamp(12px, 2vw, 22px);
-  grid-template-columns: 72px minmax(0,1fr) 130px;
+  display: grid; align-items: center; gap: clamp(10px, 2vw, 18px);
+  grid-template-columns: 64px minmax(0,1fr) 96px 118px;
   padding: 13px 16px; border-radius: var(--r-md);
   border: 1px solid transparent;
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
@@ -205,11 +205,13 @@
 .year-row__strip i.d{ background: var(--draw); }
 .year-row__strip i.l{ background: var(--loss); }
 .year-row__strip i.x{ background: var(--line-2); }
+.year-row__kits{ font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--ink-3); text-align: right; }
+.year-row__kits b{ color: var(--ink); font-weight: 600; }
 .year-row__tail{ font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--ink-3); text-align: right; }
 .year-row__tail b{ color: var(--ink); font-weight: 600; }
 @media (max-width: 640px){
   .year-row{ grid-template-columns: 58px minmax(0,1fr); }
-  .year-row__tail{ grid-column: 1 / -1; text-align: left; }
+  .year-row__kits, .year-row__tail{ grid-column: 1 / -1; text-align: left; }
   .decade__head{ position: static; }
 }
 

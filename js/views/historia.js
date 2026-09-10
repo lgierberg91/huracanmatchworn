@@ -9,9 +9,23 @@ import { allYears, matchesOfYear, record, globalStats } from '../data/store.js';
 import { statHTML } from '../components/ui.js';
 import { resultClass } from '../lib/format.js';
 
+function kitsOfYear(matches) {
+  const keys = new Set();
+  for (const m of matches) {
+    if (m.kitDescription) keys.add(normalizeKit(m.kitDescription));
+    else if (m.kitPhoto) keys.add(m.kitPhoto);
+  }
+  return keys.size;
+}
+
+function normalizeKit(text) {
+  return text.trim().toLowerCase();
+}
+
 function yearRowHTML(year) {
   const matches = matchesOfYear(year).sort((a, b) => a.date.localeCompare(b.date));
   const balance = record(matches);
+  const kitCount = kitsOfYear(matches);
   const strip = matches
     .map((m) => `<i class="${resultClass(m.result)}" title="${esc(m.date)} · ${esc(m.club.name)}"></i>`)
     .join('');
@@ -19,6 +33,7 @@ function yearRowHTML(year) {
   return `<a class="year-row reveal" href="#/temporada/${year}">
       <span class="year-row__year">${year}</span>
       <span class="year-row__strip">${strip}</span>
+      <span class="year-row__kits mono">${kitCount ? `<b>${num(kitCount)}</b> ${kitCount === 1 ? 'camiseta' : 'camisetas'}` : '—'}</span>
       <span class="year-row__tail mono">
         <b>${num(matches.length)}</b> ${matches.length === 1 ? 'partido' : 'partidos'}
         ${balance.played ? `<br>${balance.w}·${balance.d}·${balance.l}` : ''}
@@ -67,7 +82,7 @@ export function renderHistoria() {
       </div>
     </section>
 
-    <div class="shell" style="padding-block:clamp(24px,4vw,44px) clamp(50px,8vw,100px)">
+    <div class="shell shell--narrow" style="padding-block:clamp(24px,4vw,44px) clamp(50px,8vw,100px)">
       ${[...byDecade.entries()].map(([decade, list]) => decadeHTML(decade, list)).join('')}
     </div>`;
 }
