@@ -33,6 +33,12 @@ function heroHTML(stats) {
             ${statHTML({ value: stats.withKit, label: 'Camisetas', note: stats.withKit ? '' : 'todavía ninguna' })}
           </div>
         </div>
+        <figure class="hero__art">
+          <img src="assets/ilustraciones/estadio-huracan.jpg"
+            alt="Ilustración del Estadio Tomás A. Ducó, en Parque Patricios"
+            width="1100" height="825" fetchpriority="high" decoding="async">
+          <figcaption class="mono">Estadio Tomás A. Ducó · Parque Patricios</figcaption>
+        </figure>
       </div>
     </section>`;
 }
