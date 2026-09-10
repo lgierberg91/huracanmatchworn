@@ -16,6 +16,11 @@ import { renderCamisetas, mountCamisetas } from './views/camisetas.js';
 import { renderCamiseta, mountCamiseta } from './views/camiseta.js';
 import { renderKitCreator, mountKitCreator } from './views/kitCreator.js';
 
+// El navegador restaura solo la posición de scroll al crear entradas de historial,
+// y en una SPA eso deja la vista nueva abierta a media página. Se apaga al importar,
+// que es lo más temprano posible.
+if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
 const ROUTES = [
   { pattern: /^\/?$/, id: 'inicio', title: 'Huracán Matchworn', render: renderHome, mount: mountHome },
   { pattern: /^\/camisetas$/, id: 'camisetas', title: 'Camisetas', render: renderCamisetas, mount: mountCamisetas },
@@ -90,7 +95,7 @@ export function route() {
       : `${definition.title} · Huracán Matchworn`;
 
   // No saltar al tope si sólo cambió el recorte de la colección.
-  if (path !== lastPath) window.scrollTo({ top: 0, behavior: 'auto' });
+  if (path !== lastPath) scrollToTop();
   lastPath = path;
 }
 
@@ -106,4 +111,23 @@ function setActiveNav(id) {
 export function startRouter() {
   window.addEventListener('hashchange', route);
   route();
+}
+
+
+/** Vuelve al tope sin importar qué elemento sea el que scrollea. */
+function scrollToTop() {
+  const jump = () => {
+    // `scroll-behavior: smooth` animaría el salto; al cambiar de vista molesta
+    // y además la animación se puede cortar por la mitad.
+    const html = document.documentElement;
+    const previous = html.style.scrollBehavior;
+    html.style.scrollBehavior = "auto";
+    html.scrollTop = 0;
+    document.body.scrollTop = 0;
+    html.style.scrollBehavior = previous;
+  };
+  jump();
+  // Otra vez en el frame siguiente: recién ahí el alto de la vista nueva es el
+  // definitivo, y sin esto el navegador vuelve a dejar el scroll donde estaba.
+  requestAnimationFrame(jump);
 }
