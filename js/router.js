@@ -6,7 +6,6 @@ import { qs, qsa, observeReveals } from './lib/dom.js';
 
 import { renderHome, mountHome } from './views/home.js';
 import { renderColeccion, mountColeccion } from './views/coleccion.js';
-import { renderHistoria } from './views/historia.js';
 import { renderTemporada } from './views/temporada.js';
 import { renderPartido, mountPartido } from './views/partido.js';
 import { renderRival } from './views/rival.js';
@@ -27,10 +26,9 @@ const ROUTES = [
   { pattern: /^\/camiseta\/(?<id>.+)$/, id: 'camisetas', title: 'Camiseta', render: renderCamiseta, mount: mountCamiseta },
   { pattern: /^\/kit-creator$/, id: 'creator', title: 'Kit Creator', render: renderKitCreator, mount: mountKitCreator },
   { pattern: /^\/coleccion$/, id: 'partidos', title: 'Partidos', render: renderColeccion, mount: mountColeccion },
-  { pattern: /^\/historia$/, id: 'historia', title: 'Historia', render: renderHistoria },
   { pattern: /^\/estadisticas$/, id: 'estadisticas', title: 'Estadísticas', render: renderEstadisticas },
   { pattern: /^\/admin$/, id: 'admin', title: 'Administración', render: renderAdmin, mount: mountAdmin },
-  { pattern: /^\/temporada\/(?<year>\d{4})$/, id: 'historia', title: 'Temporada', render: renderTemporada },
+  { pattern: /^\/temporada\/(?<year>\d{4})$/, id: 'camisetas', title: 'Temporada', render: renderTemporada },
   { pattern: /^\/partido\/(?<id>.+)$/, id: 'partidos', title: 'Partido', render: renderPartido, mount: mountPartido },
   { pattern: /^\/rival\/(?<id>.+)$/, id: 'partidos', title: 'Rival', render: renderRival },
 ];
@@ -40,6 +38,8 @@ const LEGACY = [
   [/^\/season\/(\d{4})/, (m) => `#/temporada/${m[1]}`],
   [/^\/match\/(.+)/, (m) => `#/partido/${m[1]}`],
   [/^\/buscar\/(.*)/, (m) => `#/coleccion?q=${m[1]}`],
+  // Historia dejó de ser sección propia: la reemplaza la línea de tiempo de camisetas.
+  [/^\/historia$/, () => '#/camisetas'],
 ];
 
 function parseHash() {

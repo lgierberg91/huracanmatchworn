@@ -97,7 +97,7 @@
 
 /* ---------- footer ---------- */
 .site-footer{
-  background: var(--vitrine); color: var(--on-dark-2);
+  background: var(--paper-2); color: var(--ink-2); border-top: 3px solid var(--red);
   padding-block: clamp(40px, 6vw, 64px) 40px;
   font-size: var(--fs-sm);
 }
@@ -108,21 +108,21 @@
 }
 .site-footer h4{
   font-family: var(--font-mono); font-weight: 600; font-size: var(--fs-xs);
-  letter-spacing: .14em; color: var(--on-dark-3); margin-bottom: 12px;
+  letter-spacing: .14em; color: var(--ink-3); margin-bottom: 12px;
   text-transform: uppercase;
 }
-.site-footer a{ color: var(--on-dark); transition: color var(--t-fast) var(--ease); }
-.site-footer a:hover{ color: var(--red-bright); }
+.site-footer a{ color: var(--ink); transition: color var(--t-fast) var(--ease); }
+.site-footer a:hover{ color: var(--red); }
 .site-footer ul{ list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .site-footer__brand{ display: flex; align-items: center; gap: 11px; margin-bottom: 14px; }
 .site-footer__brand img{ width: 34px; height: 34px; }
 .site-footer__brand span{
-  font-family: var(--font-display); font-size: 1.1rem; text-transform: uppercase; color: var(--on-dark);
+  font-family: var(--font-display); font-size: 1.1rem; text-transform: uppercase; color: var(--ink);
 }
 .site-footer__legal{
-  margin-top: 34px; padding-top: 20px; border-top: 1px solid var(--line-dark);
+  margin-top: 34px; padding-top: 20px; border-top: 1px solid var(--line);
   display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
-  font-size: var(--fs-xs); color: var(--on-dark-3); font-family: var(--font-mono);
+  font-size: var(--fs-xs); color: var(--ink-3); font-family: var(--font-mono);
 }
 
 /* ---------- responsive ---------- */

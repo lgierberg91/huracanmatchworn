@@ -19,13 +19,12 @@ function heroHTML(stats) {
   return `<section class="hero">
       <div class="shell hero__grid">
         <div>
-          <span class="eyebrow eyebrow--dark">Archivo digital · desde ${stats.firstYear}</span>
+          <span class="eyebrow">Archivo digital · desde ${stats.firstYear}</span>
           <h1 class="hero__title">La historia de Huracán, <em>camiseta por camiseta</em>.</h1>
           <p class="hero__lede">Cada partido del Globo desde ${stats.firstYear}: el rival, el resultado, la competencia
             y — cuando aparece — la camiseta que se usó esa tarde. Un archivo abierto, hecho entre hinchas.</p>
           <div class="hero__actions">
-            <a class="btn btn--primary" href="#/coleccion">${icon('grid')} Explorar la colección</a>
-            <a class="btn btn--onDark" href="#/historia">${icon('clock')} Recorrer la historia</a>
+            <a class="btn btn--primary" href="#/camisetas">${icon('clock')} Recorrer la historia</a>
           </div>
           <div class="hero__counts">
             ${statHTML({ value: stats.total, label: 'Partidos' })}

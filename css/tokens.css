@@ -1,46 +1,56 @@
 /* ============================================================
    Huracán Matchworn — design tokens
    Un solo lugar para color, tipografía, espacio, sombra y motion.
+
+   La paleta es la del club: blanco dominante, rojo como identidad,
+   negro reservado para el texto. Las bandas de página (heros, cabeceras)
+   van en rojo profundo con texto blanco — de ahí los tokens `--on-dark`.
    ============================================================ */
 
 :root{
   /* ---- marca ---- */
   --red:        #DA1F26;
-  --red-deep:   #A9141A;
+  --red-deep:   #B3151C;
+  --red-darker: #8E0F15;
   --red-bright: #F0333A;
-  --red-tint:   #FDEDED;
+  --red-tint:   #FDEEEE;
+  --red-tint-2: #FADCDC;
   --gold:       #A8801B;
-  --gold-tint:  #F7EFDA;
+  --gold-tint:  #F8F0DB;
 
   /* ---- superficies ---- */
   --paper:    #FFFFFF;
-  --paper-2:  #F7F5F4;
-  --paper-3:  #EDE9E8;
-  --vitrine:  #141111;   /* bandas oscuras tipo vitrina de museo */
-  --vitrine-2:#221D1D;
+  --paper-2:  #FDF7F6;
+  --paper-3:  #F6E9E8;
+
+  /* bandas de página: rojo del club */
+  --vitrine:   #B3151C;
+  --vitrine-2: #9A1017;
 
   /* ---- tinta ---- */
-  --ink:   #141111;
-  --ink-2: #574D4B;
-  --ink-3: #8C8280;
-  --on-dark:   #F7F3F2;
-  --on-dark-2: #B4A9A7;
-  --on-dark-3: #7E7371;
+  --ink:   #171213;
+  --ink-2: #58494A;
+  --ink-3: #8D7B7C;
+
+  /* texto sobre las bandas rojas */
+  --on-dark:   #FFFFFF;
+  --on-dark-2: rgba(255,255,255,.86);
+  --on-dark-3: rgba(255,255,255,.70);
 
   /* ---- líneas ---- */
-  --line:      #E7E1E0;
-  --line-2:    #D2CAC8;
-  --line-dark: rgba(255,255,255,.14);
+  --line:      #EFE3E2;
+  --line-2:    #DFC8C7;
+  --line-dark: rgba(255,255,255,.24);
 
   /* ---- resultados ---- */
-  --win:  #17734A;  --win-tint:  #E5F1EA;
-  --draw: #856E12;  --draw-tint: #F4EEDA;
-  --loss: #BC3327;  --loss-tint: #FAEAE7;
+  --win:  #17734A;  --win-tint:  #E6F2EA;
+  --draw: #856E12;  --draw-tint: #F5EEDB;
+  --loss: #BC3327;  --loss-tint: #FBEAE7;
 
   /* ---- sombras ---- */
-  --sh-1: 0 1px 2px rgba(20,17,17,.05);
-  --sh-2: 0 2px 4px rgba(20,17,17,.05), 0 8px 20px -12px rgba(20,17,17,.28);
-  --sh-3: 0 4px 10px rgba(20,17,17,.07), 0 22px 46px -20px rgba(20,17,17,.36);
+  --sh-1: 0 1px 2px rgba(80,30,32,.05);
+  --sh-2: 0 2px 4px rgba(80,30,32,.05), 0 8px 20px -12px rgba(80,30,32,.24);
+  --sh-3: 0 4px 10px rgba(80,30,32,.07), 0 22px 46px -20px rgba(80,30,32,.3);
   --sh-red: 0 10px 30px -14px rgba(218,31,38,.55);
 
   /* ---- tipografía ---- */
@@ -77,25 +87,27 @@
 /* ---- tema oscuro: sólo se redefinen tokens, nunca reglas ---- */
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --paper:   #100E0E;
-    --paper-2: #191515;
-    --paper-3: #231E1E;
-    --vitrine: #0A0908;
-    --vitrine-2: #171313;
+    --paper:   #14100F;
+    --paper-2: #1E1817;
+    --paper-3: #2A2220;
 
-    --ink:   #F5F1F0;
-    --ink-2: #B3A9A7;
-    --ink-3: #877D7B;
+    --vitrine:   #8E0F15;
+    --vitrine-2: #7A0C12;
 
-    --red:        #FF454C;
-    --red-deep:   #D22128;
-    --red-bright: #FF6169;
-    --red-tint:   #2C1517;
+    --ink:   #F7F2F1;
+    --ink-2: #BCAFAD;
+    --ink-3: #8E8180;
+
+    --red:        #FF4A51;
+    --red-deep:   #D8232A;
+    --red-bright: #FF6B72;
+    --red-tint:   #331618;
+    --red-tint-2: #4A1D20;
     --gold:       #D9AE4B;
-    --gold-tint:  #2A2110;
+    --gold-tint:  #2E2412;
 
-    --line:   #2B2525;
-    --line-2: #3B3333;
+    --line:   #302726;
+    --line-2: #423635;
 
     --win:  #4FC48A;  --win-tint:  #12291F;
     --draw: #D6B44B;  --draw-tint: #2A2312;
@@ -110,25 +122,27 @@
 }
 
 :root[data-theme="dark"]{
-  --paper:   #100E0E;
-  --paper-2: #191515;
-  --paper-3: #231E1E;
-  --vitrine: #0A0908;
-  --vitrine-2: #171313;
+  --paper:   #14100F;
+  --paper-2: #1E1817;
+  --paper-3: #2A2220;
 
-  --ink:   #F5F1F0;
-  --ink-2: #B3A9A7;
-  --ink-3: #877D7B;
+  --vitrine:   #8E0F15;
+  --vitrine-2: #7A0C12;
 
-  --red:        #FF454C;
-  --red-deep:   #D22128;
-  --red-bright: #FF6169;
-  --red-tint:   #2C1517;
+  --ink:   #F7F2F1;
+  --ink-2: #BCAFAD;
+  --ink-3: #8E8180;
+
+  --red:        #FF4A51;
+  --red-deep:   #D8232A;
+  --red-bright: #FF6B72;
+  --red-tint:   #331618;
+  --red-tint-2: #4A1D20;
   --gold:       #D9AE4B;
-  --gold-tint:  #2A2110;
+  --gold-tint:  #2E2412;
 
-  --line:   #2B2525;
-  --line-2: #3B3333;
+  --line:   #302726;
+  --line-2: #423635;
 
   --win:  #4FC48A;  --win-tint:  #12291F;
   --draw: #D6B44B;  --draw-tint: #2A2312;
