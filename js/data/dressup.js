@@ -10,13 +10,9 @@ import { JERSEY_DIR, PLAYER_DIR } from '../config.js';
 
 export const PLAYERS = [
   { id: 'wanchope-abila', name: 'Wanchope Ábila', file: 'Wanchope_Abila.jpeg' },
-  { id: 'rene-houseman', name: 'René Houseman', file: 'Rene_Houseman.jpg', tolerance: 38 },
-  { id: 'miguel-brindisi', name: 'Miguel Brindisi', file: 'Miguel_Brindisi.webp', tolerance: 34 },
-  { id: 'tucho-mendez', name: 'Tucho Méndez', file: 'Tucho_Mendez.jpeg', tolerance: 36 },
   { id: 'kaku-gamarra', name: 'Kaku Gamarra', file: 'Kaku_Gamarra.png' },
   { id: 'ignacio-pussetto', name: 'Ignacio Pussetto', file: 'Ignacio_Pussetto.png' },
   { id: 'montenegro', name: 'Montenegro', file: 'Montenegro.webp' },
-  { id: 'edu-dominguez', name: 'Edu Domínguez', file: 'Edu_Dominguez.webp', tolerance: 32 },
 ].map((p) => ({ ...p, src: `${PLAYER_DIR}/${p.file}` }));
 
 export const JERSEYS = [
