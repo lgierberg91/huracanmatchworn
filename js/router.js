@@ -4,7 +4,7 @@
 
 import { qs, qsa, observeReveals } from './lib/dom.js';
 
-import { renderHome, mountHome } from './views/home.js';
+import { renderHome } from './views/home.js';
 import { renderColeccion, mountColeccion } from './views/coleccion.js';
 import { renderHistoria } from './views/historia.js';
 import { renderTemporada } from './views/temporada.js';
@@ -14,7 +14,7 @@ import { renderEstadisticas } from './views/estadisticas.js';
 import { renderAdmin, mountAdmin } from './views/admin.js';
 
 const ROUTES = [
-  { pattern: /^\/?$/, id: 'inicio', title: 'Huracán Matchworn', render: renderHome, mount: mountHome },
+  { pattern: /^\/?$/, id: 'inicio', title: 'Huracán Matchworn', render: renderHome },
   { pattern: /^\/coleccion$/, id: 'coleccion', title: 'La colección', render: renderColeccion, mount: mountColeccion },
   { pattern: /^\/historia$/, id: 'historia', title: 'Historia', render: renderHistoria },
   { pattern: /^\/estadisticas$/, id: 'estadisticas', title: 'Estadísticas', render: renderEstadisticas },

@@ -19,8 +19,7 @@
 }
 .hero__grid{
   position: relative; display: grid; gap: clamp(30px, 5vw, 60px);
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
-  align-items: center;
+  max-width: 62ch;
 }
 .hero .eyebrow--dark{ color: var(--red); }
 .hero .btn--onDark{ border-color: var(--line); color: var(--ink); }
@@ -37,53 +36,6 @@
   margin-top: 36px; padding-top: 26px; border-top: 1px solid var(--line);
 }
 .hero__counts .stat{ --stat-size: clamp(1.5rem, 3vw, 2.1rem); }
-
-/* ============ HOME · vestidor (probador de camisetas), en el hero ============ */
-.hero__piece{
-  position: relative;
-  padding: clamp(10px, 2vw, 20px);
-  display: grid; gap: 20px;
-  animation: fade-up 700ms var(--ease-out) both 120ms;
-}
-.hero__piece-label{
-  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
-}
-.hero__piece.dressup{ justify-items: center; text-align: center; }
-
-.figurita{
-  position: relative; width: min(340px, 100%);
-  display: grid; grid-template-columns: 34px 1fr 34px;
-  transition: opacity var(--t-fast) var(--ease);
-}
-.figurita.is-loading{ opacity: .6; }
-.figurita__row{ display: contents; }
-.figurita__row--player > *{ position: relative; z-index: 2; margin-bottom: -16px; align-self: center; }
-.figurita__row--jersey > *{ position: relative; z-index: 1; align-self: center; }
-.figurita__photo{
-  width: 116px; height: 116px; border-radius: 50%; overflow: hidden; justify-self: center;
-  background: #fff; border: 3px solid #fff; box-shadow: 0 10px 20px -12px rgba(0,0,0,.35);
-}
-.figurita__photo img{ width: 100%; height: 100%; object-fit: cover; object-position: top center; }
-.figurita__jersey{
-  min-width: 0; display: grid; place-items: center;
-}
-.figurita__jersey img{
-  width: 88%; max-height: 290px; object-fit: contain;
-  filter: drop-shadow(0 18px 22px rgba(0,0,0,.28));
-}
-
-.dressup__arrow{
-  display: grid; place-items: center; width: 34px; height: 34px;
-  border-radius: 50%; border: 1px solid var(--line); background: var(--paper);
-  color: var(--ink); cursor: pointer;
-  transition: background var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
-}
-.dressup__arrow:hover{ background: var(--paper-2); transform: translateY(-1px); }
-.dressup__arrow svg{ width: 15px; height: 15px; }
-
-@media (max-width: 720px){
-  .hero__piece.dressup{ justify-items: center; }
-}
 
 /* ============ HOME · franja de contexto ============ */
 .ribbon{

@@ -14,7 +14,6 @@ import { jerseyHTML } from '../components/jersey.js';
 import { matchCardHTML, matchHref } from '../components/matchCard.js';
 import { sectionHead, statHTML } from '../components/ui.js';
 import { clubShort } from '../data/clubs.js';
-import { dressUpHTML, mountDressUp } from '../components/dressup.js';
 
 function heroHTML(stats) {
   return `<section class="hero">
@@ -35,7 +34,6 @@ function heroHTML(stats) {
             ${statHTML({ value: stats.withKit, label: 'Camisetas', note: stats.withKit ? '' : 'todavía ninguna' })}
           </div>
         </div>
-        ${dressUpHTML()}
       </div>
     </section>`;
 }
@@ -198,9 +196,5 @@ export function renderHome() {
     ${decadesHTML()}
     ${latestHTML()}
     ${contributeHTML(stats)}`;
-}
-
-export function mountHome() {
-  mountDressUp();
 }
 
