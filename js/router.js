@@ -12,16 +12,22 @@ import { renderPartido, mountPartido } from './views/partido.js';
 import { renderRival } from './views/rival.js';
 import { renderEstadisticas } from './views/estadisticas.js';
 import { renderAdmin, mountAdmin } from './views/admin.js';
+import { renderCamisetas, mountCamisetas } from './views/camisetas.js';
+import { renderCamiseta, mountCamiseta } from './views/camiseta.js';
+import { renderKitCreator, mountKitCreator } from './views/kitCreator.js';
 
 const ROUTES = [
   { pattern: /^\/?$/, id: 'inicio', title: 'Huracán Matchworn', render: renderHome, mount: mountHome },
-  { pattern: /^\/coleccion$/, id: 'coleccion', title: 'La colección', render: renderColeccion, mount: mountColeccion },
+  { pattern: /^\/camisetas$/, id: 'camisetas', title: 'Camisetas', render: renderCamisetas, mount: mountCamisetas },
+  { pattern: /^\/camiseta\/(?<id>.+)$/, id: 'camisetas', title: 'Camiseta', render: renderCamiseta, mount: mountCamiseta },
+  { pattern: /^\/kit-creator$/, id: 'creator', title: 'Kit Creator', render: renderKitCreator, mount: mountKitCreator },
+  { pattern: /^\/coleccion$/, id: 'partidos', title: 'Partidos', render: renderColeccion, mount: mountColeccion },
   { pattern: /^\/historia$/, id: 'historia', title: 'Historia', render: renderHistoria },
   { pattern: /^\/estadisticas$/, id: 'estadisticas', title: 'Estadísticas', render: renderEstadisticas },
   { pattern: /^\/admin$/, id: 'admin', title: 'Administración', render: renderAdmin, mount: mountAdmin },
   { pattern: /^\/temporada\/(?<year>\d{4})$/, id: 'historia', title: 'Temporada', render: renderTemporada },
-  { pattern: /^\/partido\/(?<id>.+)$/, id: 'coleccion', title: 'Partido', render: renderPartido, mount: mountPartido },
-  { pattern: /^\/rival\/(?<id>.+)$/, id: 'coleccion', title: 'Rival', render: renderRival },
+  { pattern: /^\/partido\/(?<id>.+)$/, id: 'partidos', title: 'Partido', render: renderPartido, mount: mountPartido },
+  { pattern: /^\/rival\/(?<id>.+)$/, id: 'partidos', title: 'Rival', render: renderRival },
 ];
 
 /** Enlaces de la versión anterior, para que nada quede roto. */

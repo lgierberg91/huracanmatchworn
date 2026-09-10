@@ -39,3 +39,29 @@ export function brandFromKit(text) {
   cache.set(raw, id);
   return id;
 }
+
+/**
+ * Marca de indumentaria por período.
+ *
+ * Es el dato que ya traía la primera versión del sitio (variable BRAND_RANGES).
+ * Sirve para la línea de tiempo: aunque no haya foto de la camiseta de un año,
+ * sí sabemos quién la fabricaba.
+ */
+export const BRAND_ERAS = [
+  { from: 2023, to: 9999, name: 'Kappa' },
+  { from: 2021, to: 2022, name: 'Peak' },
+  { from: 2014, to: 2020, name: 'TBS' },
+  { from: 2013, to: 2013, name: 'Joma' },
+  { from: 2005, to: 2012, name: 'Kappa' },
+  { from: 2003, to: 2004, name: 'Meister' },
+  { from: 2002, to: 2002, name: 'Signia' },
+  { from: 1999, to: 2001, name: 'envion' },
+  { from: 1976, to: 1998, name: 'adidas' },
+  { from: -9999, to: 1975, name: 'Uribarri' },
+];
+
+/** Marca que vestía al club en ese año, o null. */
+export function brandForYear(year) {
+  const era = BRAND_ERAS.find((e) => year >= e.from && year <= e.to);
+  return era ? era.name : null;
+}
