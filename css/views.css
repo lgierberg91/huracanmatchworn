@@ -58,7 +58,7 @@
 .figurita__row--jersey > *{ position: relative; z-index: 1; align-self: center; }
 .figurita__photo{ justify-self: center; }
 .figurita__photo img{
-  width: 116px; height: 116px; object-fit: contain; object-position: center top;
+  width: 128px; height: 128px; object-fit: contain; object-position: center top;
   filter: drop-shadow(0 10px 16px rgba(0,0,0,.32));
 }
 .figurita__jersey{
