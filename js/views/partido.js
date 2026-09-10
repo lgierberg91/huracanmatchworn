@@ -86,16 +86,23 @@ const KIT_ROLES = [
   ['goalkeeper', 'Arquero'],
 ];
 
-/** Frente y dorso de una camiseta oficial (jugador o arquero). Sin datos: silueta genérica. */
-function kitPairHTML(kit) {
-  if (!kit || (!kit.front_photo_path && !kit.back_photo_path)) {
-    return jerseyHTML({ size: 220, label: 'Camiseta sin identificar' });
+/**
+ * Frente y dorso de una camiseta oficial (jugador o arquero).
+ * Sin datos oficiales: si hay una foto aportada por hinchas, se muestra ésa.
+ * Sólo si no hay absolutamente nada se ve la silueta genérica.
+ */
+function kitPairHTML(kit, fallbackPhotoUrl) {
+  if (kit && (kit.front_photo_path || kit.back_photo_path)) {
+    const imgs = [
+      kit.front_photo_path && `<img src="${esc(photoUrl(kit.front_photo_path))}" alt="Frente">`,
+      kit.back_photo_path && `<img src="${esc(photoUrl(kit.back_photo_path))}" alt="Dorso">`,
+    ].filter(Boolean);
+    return `<div class="kit-hero__pair">${imgs.join('')}</div>`;
   }
-  const imgs = [
-    kit.front_photo_path && `<img src="${esc(photoUrl(kit.front_photo_path))}" alt="Frente">`,
-    kit.back_photo_path && `<img src="${esc(photoUrl(kit.back_photo_path))}" alt="Dorso">`,
-  ].filter(Boolean);
-  return `<div class="kit-hero__pair">${imgs.join('')}</div>`;
+  if (fallbackPhotoUrl) {
+    return `<img src="${esc(fallbackPhotoUrl)}" alt="Foto aportada por hinchas">`;
+  }
+  return jerseyHTML({ size: 220, label: 'Camiseta sin identificar' });
 }
 
 function kitCaptionHTML(description, sub) {
@@ -136,10 +143,12 @@ function kitSectionHTML(match) {
         <div class="kit-switch" id="kit-switch" hidden>
           ${KIT_ROLES.map(([role, label], i) => `<button type="button" class="kit-switch__btn${i === 0 ? ' is-on' : ''}" data-role="${role}">${label}</button>`).join('')}
         </div>
-        <div class="kit-hero__stage" id="kit-stage">${placeholderStage}</div>
+        <div class="kit-hero__body">
+          <div class="kit-hero__stage" id="kit-stage">${placeholderStage}</div>
+          <div id="photo-gallery" class="kit-hero__side"></div>
+        </div>
         ${videoBadge}
       </div>
-      <div id="photo-gallery" class="kit-hero__filmstrip"></div>
       <div class="kit-caption">
         <div id="kit-caption">${kitCaptionHTML(match.kitDescription, match.patch_note)}</div>
         <div id="kit-meta"></div>
@@ -289,31 +298,37 @@ export function mountPartido(ctx, rerender) {
     });
   }
 
-  /* camisetas oficiales: jugador / arquero, con frente y dorso */
+  /* camiseta protagonista: oficial (jugador/arquero) o, si no hay, la primera foto aportada */
   const kitStage = qs('#kit-stage');
   const kitSwitch = qs('#kit-switch');
   const kitCaption = qs('#kit-caption');
   const kitMeta = qs('#kit-meta');
+  const gallery = qs('#photo-gallery');
+
+  let activeRole = 'player';
+  let switchWired = false;
+  let currentByRole = new Map();
+  let fanPhotos = [];
+
+  const paint = () => {
+    if (!kitStage) return;
+    const kit = currentByRole.get(activeRole);
+    const fallback = !kit && !match.kitPhoto && fanPhotos.length ? photoUrl(fanPhotos[0].storage_path) : null;
+    kitStage.innerHTML = kitPairHTML(kit, fallback);
+    if (kitCaption) {
+      kitCaption.innerHTML = kitCaptionHTML((kit && kit.description) || match.kitDescription, match.patch_note);
+    }
+    if (kitMeta) kitMeta.innerHTML = kitMetaHTML(kit);
+  };
+
   if (kitStage) {
-    let activeRole = 'player';
-    let switchWired = false;
-    let currentByRole = new Map();
-
-    const paint = () => {
-      const kit = currentByRole.get(activeRole);
-      kitStage.innerHTML = kitPairHTML(kit);
-      if (kitCaption) kitCaption.innerHTML = kitCaptionHTML(kit && kit.description, match.patch_note);
-      if (kitMeta) kitMeta.innerHTML = kitMetaHTML(kit);
-    };
-
     const refreshKitStage = () =>
       fetchKits(match.id)
         .then((kits) => {
           currentByRole = new Map(kits.map((k) => [k.role, k]));
-          if (!currentByRole.size) return; // nada cargado todavía: se queda con el placeholder
 
           if (!currentByRole.has(activeRole)) {
-            activeRole = currentByRole.has('player') ? 'player' : [...currentByRole.keys()][0];
+            activeRole = currentByRole.has('player') ? 'player' : [...currentByRole.keys()][0] || activeRole;
           }
 
           if (currentByRole.size > 1) {
@@ -333,29 +348,30 @@ export function mountPartido(ctx, rerender) {
           paint();
         })
         .catch(() => {
-          /* sin camisetas oficiales cargadas: se queda con el placeholder */
+          /* sin camisetas oficiales cargadas: se sigue con lo que haya */
         });
 
     refreshKitStage();
     mountKitEditor(match, refreshKitStage);
   }
 
-  /* galería de fotos aportadas */
-  const gallery = qs('#photo-gallery');
+  /* fotos aportadas por hinchas, en el lateral de la camiseta */
   if (gallery) {
     fetchPhotos(match.id)
       .then((photos) => {
-        if (!photos.length) return;
-        gallery.innerHTML = `<div class="gallery">
-            ${photos
-              .map(
-                (p) => `<button type="button" class="gallery__thumb" data-full="${esc(photoUrl(p.storage_path))}">
-                  <img src="${esc(photoUrl(p.storage_path))}" alt="${esc(p.caption || 'Foto del partido')}" loading="lazy" decoding="async">
-                </button>`
-              )
-              .join('')}
-          </div>
-          <p class="stat__note" style="margin-top:10px">${plural(photos.length, 'foto aportada', 'fotos aportadas')} por hinchas.</p>`;
+        fanPhotos = photos;
+        if (photos.length) {
+          gallery.innerHTML = `<div class="gallery">
+              ${photos
+                .map(
+                  (p) => `<button type="button" class="gallery__thumb" data-full="${esc(photoUrl(p.storage_path))}">
+                    <img src="${esc(photoUrl(p.storage_path))}" alt="${esc(p.caption || 'Foto del partido')}" loading="lazy" decoding="async">
+                  </button>`
+                )
+                .join('')}
+            </div>`;
+        }
+        paint();
       })
       .catch(() => {
         /* sin fotos: la ficha ya muestra el estado vacío */
