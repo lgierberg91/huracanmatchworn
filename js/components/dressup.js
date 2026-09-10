@@ -1,8 +1,8 @@
 /**
  * "Vestidor": vive dentro del hero, en el lugar de la vieja "pieza del día".
  * Una figurita (cara + camiseta) que se arma combinando un jugador histórico
- * con una camiseta del archivo, navegando de a uno con flechas — sin grilla
- * de miniaturas.
+ * con una camiseta del archivo. Los chevrones van al costado de cada elemento
+ * (no abajo, sin texto) y navegan de a uno.
  */
 
 import { qs, on } from '../lib/dom.js';
@@ -10,12 +10,8 @@ import { icon } from '../lib/icons.js';
 import { PLAYERS, JERSEYS } from '../data/dressup.js';
 import { cutoutBackground } from '../lib/cutout.js';
 
-function controlHTML(role, valueId) {
-  return `<div class="dressup__control">
-      <button type="button" class="dressup__arrow" data-role="${role}" data-dir="-1" aria-label="Anterior">${icon('arrowLeft')}</button>
-      <span class="dressup__value" id="${valueId}"></span>
-      <button type="button" class="dressup__arrow" data-role="${role}" data-dir="1" aria-label="Siguiente">${icon('arrowRight')}</button>
-    </div>`;
+function arrowHTML(role, dir, label) {
+  return `<button type="button" class="dressup__arrow" data-role="${role}" data-dir="${dir}" aria-label="${label}">${icon(dir < 0 ? 'arrowLeft' : 'arrowRight')}</button>`;
 }
 
 export function dressUpHTML() {
@@ -24,12 +20,16 @@ export function dressUpHTML() {
         <span class="eyebrow eyebrow--dark">Armá tu jugador</span>
       </div>
       <div class="figurita">
-        <div class="figurita__photo"><img id="dressup-face" alt=""></div>
-        <div class="figurita__jersey"><img id="dressup-jersey" alt=""></div>
-      </div>
-      <div class="dressup__controls">
-        ${controlHTML('player', 'dressup-name')}
-        ${controlHTML('jersey', 'dressup-kit')}
+        <div class="figurita__row figurita__row--player">
+          ${arrowHTML('player', -1, 'Jugador anterior')}
+          <div class="figurita__photo"><img id="dressup-face" alt=""></div>
+          ${arrowHTML('player', 1, 'Jugador siguiente')}
+        </div>
+        <div class="figurita__row figurita__row--jersey">
+          ${arrowHTML('jersey', -1, 'Camiseta anterior')}
+          <div class="figurita__jersey"><img id="dressup-jersey" alt=""></div>
+          ${arrowHTML('jersey', 1, 'Camiseta siguiente')}
+        </div>
       </div>
     </div>`;
 }
@@ -40,15 +40,12 @@ export function mountDressUp() {
 
   const faceImg = qs('#dressup-face', root);
   const jerseyImg = qs('#dressup-jersey', root);
-  const nameEl = qs('#dressup-name', root);
-  const kitEl = qs('#dressup-kit', root);
 
   let playerIndex = 0;
   let jerseyIndex = 0;
 
   const renderPlayer = async () => {
     const player = PLAYERS[playerIndex];
-    nameEl.textContent = player.name;
     root.classList.add('is-loading');
     try {
       faceImg.src = await cutoutBackground(player.src, { tolerance: player.tolerance, protect: 0.46 });
@@ -62,7 +59,6 @@ export function mountDressUp() {
 
   const renderJersey = async () => {
     const jersey = JERSEYS[jerseyIndex];
-    kitEl.textContent = jersey.label;
     root.classList.add('is-loading');
     try {
       jerseyImg.src = await cutoutBackground(jersey.src, { tolerance: jersey.tolerance });
