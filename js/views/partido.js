@@ -13,6 +13,7 @@ import { jerseyHTML } from '../components/jersey.js';
 import { matchCardHTML, matchRowHTML, emptyStateHTML } from '../components/matchCard.js';
 import { sectionHead, splitBarHTML } from '../components/ui.js';
 import { contributeHTML, mountContribute } from '../components/contribute.js';
+import { kitEditorHTML, mountKitEditor } from '../components/kitEditor.js';
 import { fetchPhotos, fetchKits, photoUrl } from '../data/api.js';
 import { HURACAN, clubShort } from '../data/clubs.js';
 import { isFavorite, toggleFavorite } from '../lib/storage.js';
@@ -105,6 +106,17 @@ function kitCaptionHTML(description, sub) {
        <p class="kit-sub">Nadie cargó todavía cuál se usó esa tarde.</p>`;
 }
 
+/** Marca, parche y publicidades de la camiseta activa (jugador o arquero). */
+function kitMetaHTML(kit) {
+  if (!kit) return '';
+  const chips = [
+    kit.brand && `<span class="chip chip--static">Marca: ${esc(kit.brand)}</span>`,
+    kit.patch && `<span class="chip chip--static">Parche: ${esc(kit.patch)}</span>`,
+    ...(Array.isArray(kit.sponsors) ? kit.sponsors.map((s) => `<span class="chip chip--static">${esc(s)}</span>`) : []),
+  ].filter(Boolean);
+  return chips.length ? `<div class="chip-row">${chips.join('')}</div>` : '';
+}
+
 function kitSectionHTML(match) {
   const hasPhoto = Boolean(match.kitPhoto);
   const videoId = youtubeId(match.youtube_url);
@@ -119,11 +131,6 @@ function kitSectionHTML(match) {
         </a>`
       : '';
 
-  const meta = [
-    match.kitType && ['Tipo', match.kitType],
-    match.player && ['Jugador', match.player],
-  ].filter(Boolean);
-
   return `<section class="reveal kit-section">
       <div class="kit-hero">
         <div class="kit-switch" id="kit-switch" hidden>
@@ -135,8 +142,9 @@ function kitSectionHTML(match) {
       <div id="photo-gallery" class="kit-hero__filmstrip"></div>
       <div class="kit-caption">
         <div id="kit-caption">${kitCaptionHTML(match.kitDescription, match.patch_note)}</div>
-        ${meta.length ? `<div class="chip-row">${meta.map(([k, v]) => `<span class="chip chip--static">${esc(k)}: ${esc(v)}</span>`).join('')}</div>` : ''}
+        <div id="kit-meta"></div>
       </div>
+      <div style="margin-top:18px">${kitEditorHTML()}</div>
       <div style="margin-top:18px">${contributeHTML(match)}</div>
     </section>`;
 }
@@ -285,35 +293,51 @@ export function mountPartido(ctx, rerender) {
   const kitStage = qs('#kit-stage');
   const kitSwitch = qs('#kit-switch');
   const kitCaption = qs('#kit-caption');
+  const kitMeta = qs('#kit-meta');
   if (kitStage) {
-    fetchKits(match.id)
-      .then((kits) => {
-        const byRole = new Map(kits.map((k) => [k.role, k]));
-        if (!byRole.size) return; // nada cargado todavía: se queda con el placeholder
+    let activeRole = 'player';
+    let switchWired = false;
+    let currentByRole = new Map();
 
-        let activeRole = byRole.has('player') ? 'player' : [...byRole.keys()][0];
+    const paint = () => {
+      const kit = currentByRole.get(activeRole);
+      kitStage.innerHTML = kitPairHTML(kit);
+      if (kitCaption) kitCaption.innerHTML = kitCaptionHTML(kit && kit.description, match.patch_note);
+      if (kitMeta) kitMeta.innerHTML = kitMetaHTML(kit);
+    };
 
-        const paint = () => {
-          const kit = byRole.get(activeRole);
-          kitStage.innerHTML = kitPairHTML(kit);
-          if (kitCaption) kitCaption.innerHTML = kitCaptionHTML(kit && kit.description, match.patch_note);
-        };
+    const refreshKitStage = () =>
+      fetchKits(match.id)
+        .then((kits) => {
+          currentByRole = new Map(kits.map((k) => [k.role, k]));
+          if (!currentByRole.size) return; // nada cargado todavía: se queda con el placeholder
 
-        if (byRole.size > 1) {
-          kitSwitch.hidden = false;
-          on(kitSwitch, 'click', '.kit-switch__btn', (event, btn) => {
-            if (!byRole.has(btn.dataset.role) || btn.dataset.role === activeRole) return;
-            activeRole = btn.dataset.role;
-            qsa('.kit-switch__btn', kitSwitch).forEach((b) => b.classList.toggle('is-on', b === btn));
-            paint();
-          });
-        }
+          if (!currentByRole.has(activeRole)) {
+            activeRole = currentByRole.has('player') ? 'player' : [...currentByRole.keys()][0];
+          }
 
-        paint();
-      })
-      .catch(() => {
-        /* sin camisetas oficiales cargadas: se queda con el placeholder */
-      });
+          if (currentByRole.size > 1) {
+            kitSwitch.hidden = false;
+            qsa('.kit-switch__btn', kitSwitch).forEach((b) => b.classList.toggle('is-on', b.dataset.role === activeRole));
+            if (!switchWired) {
+              switchWired = true;
+              on(kitSwitch, 'click', '.kit-switch__btn', (event, btn) => {
+                if (!currentByRole.has(btn.dataset.role) || btn.dataset.role === activeRole) return;
+                activeRole = btn.dataset.role;
+                qsa('.kit-switch__btn', kitSwitch).forEach((b) => b.classList.toggle('is-on', b === btn));
+                paint();
+              });
+            }
+          }
+
+          paint();
+        })
+        .catch(() => {
+          /* sin camisetas oficiales cargadas: se queda con el placeholder */
+        });
+
+    refreshKitStage();
+    mountKitEditor(match, refreshKitStage);
   }
 
   /* galería de fotos aportadas */

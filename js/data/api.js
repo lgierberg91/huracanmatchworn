@@ -62,6 +62,39 @@ export async function fetchKits(matchId) {
 export const photoUrl = (storagePath) =>
   `${SUPABASE_URL}/storage/v1/object/public/${PHOTO_BUCKET}/${storagePath}`;
 
+/** Sube el frente o el dorso de una camiseta oficial (jugador o arquero) al bucket. */
+export async function uploadKitPhoto(matchId, role, side, file) {
+  const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+  const path = `kits/${matchId}/${role}-${side}-${Date.now()}-${safeName}`;
+
+  const upload = await fetch(`${SUPABASE_URL}/storage/v1/object/${PHOTO_BUCKET}/${path}`, {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': file.type || 'application/octet-stream' }),
+    body: file,
+  });
+  if (!upload.ok) throw await readError(upload);
+
+  return path;
+}
+
+/**
+ * Crea o actualiza la fila de camiseta oficial (jugador/arquero) de un partido.
+ * Sólo se tocan las columnas presentes en `fields`; el resto queda como estaba.
+ */
+export async function upsertKit(matchId, role, fields) {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/match_kits?on_conflict=match_id,role`, {
+    method: 'POST',
+    headers: authHeaders({
+      'Content-Type': 'application/json',
+      Prefer: 'resolution=merge-duplicates,return=representation',
+    }),
+    body: JSON.stringify({ match_id: matchId, role, ...fields }),
+  });
+  if (!response.ok) throw await readError(response);
+  const rows = await response.json();
+  return rows[0];
+}
+
 /**
  * Aporte de datos de camiseta / historia / video.
  * Sólo se mandan los campos presentes; el resto queda como está en la base.

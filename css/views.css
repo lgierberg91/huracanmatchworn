@@ -416,6 +416,12 @@ textarea.field{ resize: vertical; min-height: 88px; line-height: 1.5; }
 .form-status{ font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--ink-3); }
 .form-status.is-ok{ color: var(--win); }
 .form-status.is-err{ color: var(--loss); }
+.tag-x{
+  pointer-events: auto; display: inline-flex; border: none; background: none;
+  padding: 0; margin: 0 -4px 0 1px; color: inherit; opacity: .6; cursor: pointer;
+}
+.tag-x:hover{ opacity: 1; }
+.tag-x svg{ width: 11px; height: 11px; }
 
 /* ============ misceláneos ============ */
 .backlink{
