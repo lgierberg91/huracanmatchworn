@@ -14,14 +14,6 @@
  * al fondo (tolerancias altas para limpiar fondos texturados) puede terminar
  * comiéndose la cara entera y dejando sólo los trazos de más contraste
  * (cejas, ojos, bigote) flotando como un dibujo fantasma.
- *
- * `mode: 'clear'` (default) vuelve transparente el fondo detectado.
- * `mode: 'whiten'` lo deja opaco pero en blanco puro. Además de la
- * inundación en cadena (que arranca desde los bordes), hace una pasada
- * final sobre TODA la imagen: cualquier píxel parejo (poca diferencia
- * entre sus canales) y suficientemente claro se fuerza a blanco puro,
- * aunque no esté conectado al borde — así no queda una franja gris
- * residual pegada al límite real de la cara/pelo.
  */
 
 const cache = new Map();
@@ -36,8 +28,8 @@ function loadImage(src) {
   });
 }
 
-export async function cutoutBackground(src, { tolerance = 30, protect = 0, mode = 'clear' } = {}) {
-  const key = `${src}::${tolerance}::${protect}::${mode}`;
+export async function cutoutBackground(src, { tolerance = 30, protect = 0 } = {}) {
+  const key = `${src}::${tolerance}::${protect}`;
   if (cache.has(key)) return cache.get(key);
 
   const promise = loadImage(src).then((img) => {
@@ -62,13 +54,8 @@ export async function cutoutBackground(src, { tolerance = 30, protect = 0, mode 
 
     const clear = (x, y, i) => {
       visited[y * width + x] = 1;
-      const pr = data[i], pg = data[i + 1], pb = data[i + 2];
-      if (mode === 'whiten') {
-        data[i] = 255; data[i + 1] = 255; data[i + 2] = 255;
-      } else {
-        data[i + 3] = 0;
-      }
-      stack.push(x, y, pr, pg, pb);
+      data[i + 3] = 0;
+      stack.push(x, y, data[i], data[i + 1], data[i + 2]);
     };
 
     const tryVisit = (x, y, pr, pg, pb) => {
@@ -97,18 +84,6 @@ export async function cutoutBackground(src, { tolerance = 30, protect = 0, mode 
       tryVisit(x - 1, y, pr, pg, pb);
       tryVisit(x, y + 1, pr, pg, pb);
       tryVisit(x, y - 1, pr, pg, pb);
-    }
-
-    if (mode === 'whiten') {
-      const NEAR_WHITE_MIN = 190;
-      const NEAR_WHITE_SPREAD = 16;
-      for (let p = 0; p < data.length; p += 4) {
-        const r = data[p], g = data[p + 1], b = data[p + 2];
-        const mn = Math.min(r, g, b), mx = Math.max(r, g, b);
-        if (mn >= NEAR_WHITE_MIN && (mx - mn) <= NEAR_WHITE_SPREAD) {
-          data[p] = 255; data[p + 1] = 255; data[p + 2] = 255;
-        }
-      }
     }
 
     ctx.putImageData(imageData, 0, 0);
