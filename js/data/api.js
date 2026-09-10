@@ -49,6 +49,16 @@ export async function fetchPhotos(matchId) {
   return response.json();
 }
 
+/** Camisetas oficiales del partido (jugador / arquero, frente / dorso). */
+export async function fetchKits(matchId) {
+  const url =
+    `${SUPABASE_URL}/rest/v1/match_kits?match_id=eq.${encodeURIComponent(matchId)}` +
+    '&select=*';
+  const response = await fetch(url, { headers: headers() });
+  if (!response.ok) throw await readError(response);
+  return response.json();
+}
+
 export const photoUrl = (storagePath) =>
   `${SUPABASE_URL}/storage/v1/object/public/${PHOTO_BUCKET}/${storagePath}`;
 

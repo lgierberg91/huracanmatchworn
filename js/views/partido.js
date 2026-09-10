@@ -4,7 +4,7 @@
  * Jerarquía: qué camiseta es + quién la usó + contra quién + cuándo + qué pasó.
  */
 
-import { esc, qs, on, toast, observeReveals } from '../lib/dom.js';
+import { esc, qs, qsa, on, toast, observeReveals } from '../lib/dom.js';
 import { icon } from '../lib/icons.js';
 import { dateLong, venueLong, resultLong, resultClass, plural, dateMedium } from '../lib/format.js';
 import { getMatch, matchesOfYear, clubEntry, record } from '../data/store.js';
@@ -13,7 +13,7 @@ import { jerseyHTML } from '../components/jersey.js';
 import { matchCardHTML, matchRowHTML, emptyStateHTML } from '../components/matchCard.js';
 import { sectionHead, splitBarHTML } from '../components/ui.js';
 import { contributeHTML, mountContribute } from '../components/contribute.js';
-import { fetchPhotos, photoUrl } from '../data/api.js';
+import { fetchPhotos, fetchKits, photoUrl } from '../data/api.js';
 import { HURACAN, clubShort } from '../data/clubs.js';
 import { isFavorite, toggleFavorite } from '../lib/storage.js';
 
@@ -80,10 +80,35 @@ function heroHTML(match) {
     </section>`;
 }
 
+const KIT_ROLES = [
+  ['player', 'Jugador'],
+  ['goalkeeper', 'Arquero'],
+];
+
+/** Frente y dorso de una camiseta oficial (jugador o arquero). Sin datos: silueta genérica. */
+function kitPairHTML(kit) {
+  if (!kit || (!kit.front_photo_path && !kit.back_photo_path)) {
+    return jerseyHTML({ size: 220, label: 'Camiseta sin identificar' });
+  }
+  const imgs = [
+    kit.front_photo_path && `<img src="${esc(photoUrl(kit.front_photo_path))}" alt="Frente">`,
+    kit.back_photo_path && `<img src="${esc(photoUrl(kit.back_photo_path))}" alt="Dorso">`,
+  ].filter(Boolean);
+  return `<div class="kit-hero__pair">${imgs.join('')}</div>`;
+}
+
+function kitCaptionHTML(description, sub) {
+  return description
+    ? `<h1 class="kit-title">${esc(description)}</h1>
+       ${sub ? `<p class="kit-sub">${esc(sub)}</p>` : ''}`
+    : `<h1 class="kit-title kit-title--muted">Camiseta sin identificar</h1>
+       <p class="kit-sub">Nadie cargó todavía cuál se usó esa tarde.</p>`;
+}
+
 function kitSectionHTML(match) {
   const hasPhoto = Boolean(match.kitPhoto);
   const videoId = youtubeId(match.youtube_url);
-  const stage = hasPhoto
+  const placeholderStage = hasPhoto
     ? `<img src="${esc(photoUrl(match.kitPhoto))}" alt="Camiseta usada ante ${esc(match.club.name)}">`
     : jerseyHTML({ size: 220, label: 'Camiseta sin identificar' });
 
@@ -94,12 +119,6 @@ function kitSectionHTML(match) {
         </a>`
       : '';
 
-  const caption = match.kitDescription
-    ? `<h1 class="kit-title">${esc(match.kitDescription)}</h1>
-       ${match.patch_note ? `<p class="kit-sub">${esc(match.patch_note)}</p>` : ''}`
-    : `<h1 class="kit-title kit-title--muted">Camiseta sin identificar</h1>
-       <p class="kit-sub">Nadie cargó todavía cuál se usó esa tarde.</p>`;
-
   const meta = [
     match.kitType && ['Tipo', match.kitType],
     match.player && ['Jugador', match.player],
@@ -107,11 +126,15 @@ function kitSectionHTML(match) {
 
   return `<section class="reveal kit-section">
       <div class="kit-hero">
-        <div class="kit-hero__stage">${stage}${videoBadge}</div>
+        <div class="kit-switch" id="kit-switch" hidden>
+          ${KIT_ROLES.map(([role, label], i) => `<button type="button" class="kit-switch__btn${i === 0 ? ' is-on' : ''}" data-role="${role}">${label}</button>`).join('')}
+        </div>
+        <div class="kit-hero__stage" id="kit-stage">${placeholderStage}</div>
+        ${videoBadge}
       </div>
       <div id="photo-gallery" class="kit-hero__filmstrip"></div>
       <div class="kit-caption">
-        ${caption}
+        <div id="kit-caption">${kitCaptionHTML(match.kitDescription, match.patch_note)}</div>
         ${meta.length ? `<div class="chip-row">${meta.map(([k, v]) => `<span class="chip chip--static">${esc(k)}: ${esc(v)}</span>`).join('')}</div>` : ''}
       </div>
       <div style="margin-top:18px">${contributeHTML(match)}</div>
@@ -256,6 +279,41 @@ export function mountPartido(ctx, rerender) {
         /* el usuario canceló */
       }
     });
+  }
+
+  /* camisetas oficiales: jugador / arquero, con frente y dorso */
+  const kitStage = qs('#kit-stage');
+  const kitSwitch = qs('#kit-switch');
+  const kitCaption = qs('#kit-caption');
+  if (kitStage) {
+    fetchKits(match.id)
+      .then((kits) => {
+        const byRole = new Map(kits.map((k) => [k.role, k]));
+        if (!byRole.size) return; // nada cargado todavía: se queda con el placeholder
+
+        let activeRole = byRole.has('player') ? 'player' : [...byRole.keys()][0];
+
+        const paint = () => {
+          const kit = byRole.get(activeRole);
+          kitStage.innerHTML = kitPairHTML(kit);
+          if (kitCaption) kitCaption.innerHTML = kitCaptionHTML(kit && kit.description, match.patch_note);
+        };
+
+        if (byRole.size > 1) {
+          kitSwitch.hidden = false;
+          on(kitSwitch, 'click', '.kit-switch__btn', (event, btn) => {
+            if (!byRole.has(btn.dataset.role) || btn.dataset.role === activeRole) return;
+            activeRole = btn.dataset.role;
+            qsa('.kit-switch__btn', kitSwitch).forEach((b) => b.classList.toggle('is-on', b === btn));
+            paint();
+          });
+        }
+
+        paint();
+      })
+      .catch(() => {
+        /* sin camisetas oficiales cargadas: se queda con el placeholder */
+      });
   }
 
   /* galería de fotos aportadas */
