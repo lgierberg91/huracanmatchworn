@@ -14,6 +14,11 @@
  * al fondo (tolerancias altas para limpiar fondos texturados) puede terminar
  * comiéndose la cara entera y dejando sólo los trazos de más contraste
  * (cejas, ojos, bigote) flotando como un dibujo fantasma.
+ *
+ * `mode: 'clear'` (default) vuelve transparente el fondo detectado.
+ * `mode: 'whiten'` lo deja opaco pero en blanco puro — útil para fotos que
+ * ya tienen un fondo parejo pero no del todo blanco, así no se nota el
+ * borde del rectángulo contra un fondo de página blanco.
  */
 
 const cache = new Map();
@@ -28,8 +33,8 @@ function loadImage(src) {
   });
 }
 
-export async function cutoutBackground(src, { tolerance = 30, protect = 0 } = {}) {
-  const key = `${src}::${tolerance}::${protect}`;
+export async function cutoutBackground(src, { tolerance = 30, protect = 0, mode = 'clear' } = {}) {
+  const key = `${src}::${tolerance}::${protect}::${mode}`;
   if (cache.has(key)) return cache.get(key);
 
   const promise = loadImage(src).then((img) => {
@@ -54,8 +59,13 @@ export async function cutoutBackground(src, { tolerance = 30, protect = 0 } = {}
 
     const clear = (x, y, i) => {
       visited[y * width + x] = 1;
-      data[i + 3] = 0;
-      stack.push(x, y, data[i], data[i + 1], data[i + 2]);
+      const pr = data[i], pg = data[i + 1], pb = data[i + 2];
+      if (mode === 'whiten') {
+        data[i] = 255; data[i + 1] = 255; data[i + 2] = 255;
+      } else {
+        data[i + 3] = 0;
+      }
+      stack.push(x, y, pr, pg, pb);
     };
 
     const tryVisit = (x, y, pr, pg, pb) => {

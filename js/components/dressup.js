@@ -41,9 +41,16 @@ export function mountDressUp() {
   let playerIndex = 0;
   let jerseyIndex = 0;
 
-  const renderPlayer = () => {
+  const renderPlayer = async () => {
     const player = PLAYERS[playerIndex];
-    faceImg.src = player.src;
+    root.classList.add('is-loading');
+    try {
+      faceImg.src = await cutoutBackground(player.src, { tolerance: 24, mode: 'whiten' });
+    } catch {
+      faceImg.src = player.src;
+    } finally {
+      root.classList.remove('is-loading');
+    }
     faceImg.alt = player.name;
   };
 
