@@ -8,6 +8,12 @@
  * No es una segmentación real: un fondo con mucho detalle (tribuna, multitud)
  * no se puede limpiar del todo con esta técnica; para esos casos conviene
  * partir de una foto con fondo más parejo.
+ *
+ * `protect` reserva un rectángulo centrado (fracción del ancho/alto) que la
+ * inundación nunca puede tocar. Sin esto, un retrato donde la piel se parece
+ * al fondo (tolerancias altas para limpiar fondos texturados) puede terminar
+ * comiéndose la cara entera y dejando sólo los trazos de más contraste
+ * (cejas, ojos, bigote) flotando como un dibujo fantasma.
  */
 
 const cache = new Map();
@@ -22,8 +28,8 @@ function loadImage(src) {
   });
 }
 
-export async function cutoutBackground(src, { tolerance = 30 } = {}) {
-  const key = `${src}::${tolerance}`;
+export async function cutoutBackground(src, { tolerance = 30, protect = 0 } = {}) {
+  const key = `${src}::${tolerance}::${protect}`;
   if (cache.has(key)) return cache.get(key);
 
   const promise = loadImage(src).then((img) => {
@@ -41,6 +47,11 @@ export async function cutoutBackground(src, { tolerance = 30 } = {}) {
     const tol2 = tolerance * tolerance;
     const stack = [];
 
+    const protHalfW = (width * protect) / 2;
+    const protHalfH = (height * protect) / 2;
+    const cx = width / 2, cy = height / 2;
+    const isProtected = (x, y) => Math.abs(x - cx) <= protHalfW && Math.abs(y - cy) <= protHalfH;
+
     const clear = (x, y, i) => {
       visited[y * width + x] = 1;
       data[i + 3] = 0;
@@ -51,6 +62,7 @@ export async function cutoutBackground(src, { tolerance = 30 } = {}) {
       if (x < 0 || y < 0 || x >= width || y >= height) return;
       const idx = y * width + x;
       if (visited[idx]) return;
+      if (isProtected(x, y)) { visited[idx] = 1; return; }
       const i = idx * 4;
       const dr = data[i] - pr, dg = data[i + 1] - pg, db = data[i + 2] - pb;
       if (dr * dr + dg * dg + db * db <= tol2) clear(x, y, i);

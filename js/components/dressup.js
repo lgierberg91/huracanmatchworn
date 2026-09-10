@@ -51,7 +51,7 @@ export function mountDressUp() {
     nameEl.textContent = player.name;
     root.classList.add('is-loading');
     try {
-      faceImg.src = await cutoutBackground(player.src, { tolerance: player.tolerance });
+      faceImg.src = await cutoutBackground(player.src, { tolerance: player.tolerance, protect: 0.46 });
     } catch {
       faceImg.src = player.src;
     } finally {
