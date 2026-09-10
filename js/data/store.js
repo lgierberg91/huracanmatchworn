@@ -7,6 +7,7 @@ import { fetchAllMatches } from './api.js';
 import { enrich, CLASICO_ID } from './model.js';
 import { normalizeName } from './clubs.js';
 import { FAMILIES } from './competitions.js';
+import { BRANDS } from './brands.js';
 import { CACHE_KEY, CACHE_TTL_MS, FIRST_YEAR } from '../config.js';
 import { favorites } from '../lib/storage.js';
 
@@ -283,6 +284,8 @@ export const emptyQuery = () => ({
   families: [],
   venues: [],
   results: [],
+  years: [],
+  brands: [],
   onlyKit: false,
   onlyMissing: false,
   onlyFav: false,
@@ -309,6 +312,8 @@ export function runQuery(query) {
   const families = new Set(query.families || []);
   const venues = new Set(query.venues || []);
   const results = new Set(query.results || []);
+  const years = new Set(query.years || []);
+  const brands = new Set(query.brands || []);
   const favs = query.onlyFav ? favorites() : null;
 
   const out = state.matches.filter((m) => {
@@ -317,6 +322,8 @@ export function runQuery(query) {
     if (families.size && !families.has(m.family.id)) return false;
     if (venues.size && !venues.has(m.venue)) return false;
     if (results.size && !results.has(m.result || 'P')) return false;
+    if (years.size && !years.has(m.year)) return false;
+    if (brands.size && !brands.has(m.kitBrand)) return false;
     if (query.onlyKit && !m.hasKit) return false;
     if (query.onlyMissing && m.hasKit) return false;
     if (favs && !favs.has(m.id)) return false;
@@ -354,13 +361,19 @@ export function quickSearch(text, limit = 8) {
 export function facetCounts() {
   const decades = new Map();
   const families = new Map();
+  const years = new Map();
+  const brands = new Map();
   for (const m of state.matches) {
     decades.set(m.decade, (decades.get(m.decade) || 0) + 1);
     families.set(m.family.id, (families.get(m.family.id) || 0) + 1);
+    years.set(m.year, (years.get(m.year) || 0) + 1);
+    if (m.kitBrand) brands.set(m.kitBrand, (brands.get(m.kitBrand) || 0) + 1);
   }
   return {
     decades: [...decades.entries()].sort((a, b) => b[0] - a[0]),
     families: FAMILIES.filter((f) => families.has(f.id)).map((f) => ({ ...f, count: families.get(f.id) })),
+    years: [...years.entries()].sort((a, b) => b[0] - a[0]),
+    brands: BRANDS.filter((b) => brands.has(b.id)).map((b) => ({ ...b, count: brands.get(b.id) })),
   };
 }
 

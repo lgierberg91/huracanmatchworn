@@ -8,6 +8,7 @@
 
 import { resolveClub, normalizeName } from './clubs.js';
 import { competitionFamily, editionLabel, phaseLabel, localizeRound, isKnockout } from './competitions.js';
+import { brandFromKit } from './brands.js';
 
 /** El clásico de Huracán. Se usa para destacar y para la sección de rivalidades. */
 export const CLASICO_ID = 'san-lorenzo';
@@ -49,6 +50,7 @@ export function enrich(row) {
     kitType,
     kitPhoto,
     kitDescription,
+    kitBrand: brandFromKit(kitDescription),
     hasKit: Boolean(kitPhoto || kitDescription),
     hasStory: Boolean(optional(row, 'story_text')),
     hasVideo: Boolean(optional(row, 'youtube_url')),

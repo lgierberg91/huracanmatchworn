@@ -16,7 +16,8 @@ import { clubShort } from '../data/clubs.js';
 
 /* ---------------- URL <-> filtros ---------------- */
 
-const LIST_KEYS = { decadas: 'decades', clubes: 'clubs', torneos: 'families', condicion: 'venues', resultado: 'results' };
+const LIST_KEYS = { decadas: 'decades', clubes: 'clubs', torneos: 'families', condicion: 'venues', resultado: 'results', temporadas: 'years', marca: 'brands' };
+const NUMERIC_KEYS = new Set(['decades', 'years']);
 
 export function queryFromParams(params) {
   const query = emptyQuery();
@@ -24,7 +25,7 @@ export function queryFromParams(params) {
   for (const [urlKey, stateKey] of Object.entries(LIST_KEYS)) {
     const raw = params.get(urlKey);
     if (!raw) continue;
-    query[stateKey] = raw.split(',').filter(Boolean).map((v) => (stateKey === 'decades' ? Number(v) : v));
+    query[stateKey] = raw.split(',').filter(Boolean).map((v) => (NUMERIC_KEYS.has(stateKey) ? Number(v) : v));
   }
   query.onlyKit = params.get('camiseta') === '1';
   query.onlyMissing = params.get('sincamiseta') === '1';
@@ -48,7 +49,7 @@ function paramsFromQuery(query) {
 
 const activeCount = (query) =>
   query.decades.length + query.clubs.length + query.families.length +
-  query.venues.length + query.results.length +
+  query.venues.length + query.results.length + query.years.length + query.brands.length +
   (query.onlyKit ? 1 : 0) + (query.onlyMissing ? 1 : 0) + (query.onlyFav ? 1 : 0);
 
 /* ---------------- markup ---------------- */
@@ -75,9 +76,10 @@ function toggleChips(name, options, selected) {
 }
 
 function filterPanelHTML(query) {
-  const { decades, families } = facetCounts();
+  const { decades, families, years, brands } = facetCounts();
   const ranking = clubRanking();
   const topRivals = ranking.slice(0, 10);
+  const recentYears = years.slice(0, 10);
 
   return `<div class="filterbar__panel" id="filter-panel" ${activeCount(query) ? '' : 'hidden'}>
       <div class="filter-group">
@@ -86,9 +88,28 @@ function filterPanelHTML(query) {
       </div>
 
       <div class="filter-group">
+        <span class="filter-group__label">Temporada</span>
+        <div class="chip-scroll">${toggleChips('years', recentYears.map(([y, c]) => [y, y, c]), query.years)}</div>
+        <select class="select" id="year-select" aria-label="Elegir cualquier temporada">
+          <option value="">Todas las temporadas</option>
+          ${years
+            .map(
+              ([y, c]) =>
+                `<option value="${y}"${query.years.includes(y) ? ' selected' : ''}>${y} · ${num(c)}</option>`
+            )
+            .join('')}
+        </select>
+      </div>
+
+      <div class="filter-group">
         <span class="filter-group__label">Competencia</span>
         <div class="chip-row">${toggleChips('families', families.map((f) => [f.id, f.label, f.count]), query.families)}</div>
       </div>
+
+      ${brands.length ? `<div class="filter-group">
+        <span class="filter-group__label">Marca</span>
+        <div class="chip-row">${toggleChips('brands', brands.map((b) => [b.id, b.label, b.count]), query.brands)}</div>
+      </div>` : ''}
 
       <div class="filter-group">
         <span class="filter-group__label">Rival</span>
@@ -224,6 +245,11 @@ export function mountColeccion(ctx) {
     });
     query.venues.forEach((v) => bits.push(VENUES.find(([k]) => k === v)?.[1] || v));
     query.results.forEach((r) => bits.push(RESULTS.find(([k]) => k === r)?.[1] || r));
+    query.years.forEach((y) => bits.push(String(y)));
+    query.brands.forEach((b) => {
+      const found = facetCounts().brands.find((x) => x.id === b);
+      if (found) bits.push(found.label);
+    });
     if (query.onlyKit) bits.push('con camiseta');
     if (query.onlyMissing) bits.push('falta identificar');
     if (query.onlyFav) bits.push('favoritos');
@@ -274,7 +300,7 @@ export function mountColeccion(ctx) {
   }
 
   function toggleValue(key, value) {
-    const parsed = key === 'decades' ? Number(value) : value;
+    const parsed = key === 'decades' || key === 'years' ? Number(value) : value;
     const list = query[key];
     const index = list.findIndex((v) => String(v) === String(parsed));
     if (index >= 0) list.splice(index, 1);
@@ -328,6 +354,16 @@ export function mountColeccion(ctx) {
     apply();
   });
 
+  qs('#year-select').addEventListener('change', (event) => {
+    query.years = event.target.value ? [Number(event.target.value)] : [];
+    qsa('[data-filter="years"]', panel).forEach((chip) => {
+      const isOn = query.years.includes(Number(chip.dataset.value));
+      chip.classList.toggle('is-on', isOn);
+      chip.setAttribute('aria-pressed', String(isOn));
+    });
+    apply();
+  });
+
   function clearAll() {
     const sort = query.sort;
     query = emptyQuery();
@@ -338,6 +374,7 @@ export function mountColeccion(ctx) {
       chip.setAttribute('aria-pressed', 'false');
     });
     qs('#club-select').value = '';
+    qs('#year-select').value = '';
     apply();
   }
 
