@@ -15,6 +15,7 @@ import { sectionHead, splitBarHTML } from '../components/ui.js';
 import { contributeHTML, mountContribute } from '../components/contribute.js';
 import { kitEditorHTML, mountKitEditor } from '../components/kitEditor.js';
 import { fetchPhotos, fetchKits, photoUrl } from '../data/api.js';
+import { isMember } from '../data/auth.js';
 import { HURACAN, clubShort } from '../data/clubs.js';
 import { isFavorite, toggleFavorite } from '../lib/storage.js';
 
@@ -108,6 +109,27 @@ function kitCaptionHTML(description, sub) {
        <p class="kit-sub">Nadie cargó todavía cuál se usó esa tarde.</p>`;
 }
 
+const KIT_SIDES = [
+  ['front', 'Frente'],
+  ['back', 'Dorso'],
+];
+
+/** Cuadraditos para cargar/reemplazar el frente y el dorso de la camiseta activa (sólo historiadores). */
+function kitTilesHTML(kit) {
+  if (!isMember()) return '';
+  return KIT_SIDES.map(([side, label]) => {
+    const path = kit && kit[`${side}_photo_path`];
+    if (path) {
+      return `<button type="button" class="kit-tile kit-tile--photo" data-side="${side}" title="Cambiar ${label.toLowerCase()}">
+          <img src="${esc(photoUrl(path))}" alt="${label}">
+        </button>`;
+    }
+    return `<button type="button" class="kit-tile kit-tile--add" data-side="${side}" title="Cargar ${label.toLowerCase()}">
+        ${icon('plus')}<span>${label}</span>
+      </button>`;
+  }).join('');
+}
+
 /** Marca, parche y publicidades de la camiseta activa (jugador o arquero). */
 function kitMetaHTML(kit) {
   if (!kit) return '';
@@ -139,6 +161,7 @@ function kitStageHTML(match) {
       <div class="kit-hero__stage" id="kit-stage">${placeholderStage}</div>
       ${videoBadge}
     </div>
+    <div id="kit-tiles" class="kit-gallery"></div>
     <div id="photo-gallery" class="kit-gallery"></div>`;
 }
 
@@ -298,6 +321,7 @@ export function mountPartido(ctx, rerender) {
   const kitRoleBtn = qs('#kit-role-btn');
   const kitCaption = qs('#kit-caption');
   const kitMeta = qs('#kit-meta');
+  const kitTiles = qs('#kit-tiles');
   const gallery = qs('#photo-gallery');
 
   let activeRole = 'player';
@@ -313,6 +337,7 @@ export function mountPartido(ctx, rerender) {
       kitCaption.innerHTML = kitCaptionHTML((kit && kit.description) || match.kitDescription, match.patch_note);
     }
     if (kitMeta) kitMeta.innerHTML = kitMetaHTML(kit);
+    if (kitTiles) kitTiles.innerHTML = kitTilesHTML(kit);
     if (kitRoleBtn) {
       const isPlayer = activeRole === 'player';
       kitRoleBtn.innerHTML = icon(isPlayer ? 'glove' : 'boot');
@@ -320,6 +345,18 @@ export function mountPartido(ctx, rerender) {
       kitRoleBtn.setAttribute('aria-label', kitRoleBtn.title);
     }
   };
+
+  if (kitTiles) {
+    on(kitTiles, 'click', '.kit-tile', (event, tile) => {
+      const block = qs('#kit-editor-block');
+      if (!block) return;
+      block.hidden = false;
+      block.querySelector(`#k-role .chip[data-value="${activeRole}"]`)?.click();
+      block.querySelector(`#k-side .chip[data-value="${tile.dataset.side}"]`)?.click();
+      block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      qs('#k-photo-btn', block)?.click();
+    });
+  }
 
   if (kitRoleBtn) {
     kitRoleBtn.addEventListener('click', () => {

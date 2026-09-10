@@ -22,8 +22,11 @@ const SIDES = [
 export function kitEditorHTML() {
   if (!isMember()) return '';
 
-  return `<details class="contrib" id="kit-editor-block">
-      <summary class="contrib__head">${icon('shirt')} Cargar camiseta oficial</summary>
+  return `<div class="contrib" id="kit-editor-block" hidden>
+      <div class="contrib__head contrib__head--static">
+        <span>${icon('shirt')} Camiseta oficial</span>
+        <button type="button" class="tag-x" id="k-close" aria-label="Cerrar">${icon('close')}</button>
+      </div>
       <form class="contrib__form" id="kit-editor-form">
         <div class="field-row">
           <div class="chip-row" id="k-role" role="group" aria-label="Rol">
@@ -58,14 +61,19 @@ export function kitEditorHTML() {
           <span class="form-status" id="k-status"></span>
         </div>
       </form>
-    </details>`;
+    </div>`;
 }
 
 export function mountKitEditor(match, onChange) {
   if (!isMember()) return;
 
+  const block = qs('#kit-editor-block');
   const form = qs('#kit-editor-form');
   if (!form) return;
+
+  qs('#k-close')?.addEventListener('click', () => {
+    if (block) block.hidden = true;
+  });
 
   const roleGroup = qs('#k-role');
   const sideGroup = qs('#k-side');
