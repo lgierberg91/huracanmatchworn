@@ -55,15 +55,14 @@
       <a class="site-nav__link" data-nav="camisetas" href="#/camisetas">Camisetas</a>
       <a class="site-nav__link" data-nav="partidos" href="#/coleccion">Partidos</a>
       <a class="site-nav__link" data-nav="creator" href="#/kit-creator">Kit Creator</a>
+      <a class="site-nav__link" data-nav="juego" href="#/juego">Jugar</a>
     </nav>
 
     <div class="header-tools">
       <span class="chip chip--red" id="edit-flag" hidden>Modo colaborador</span>
       <button type="button" class="search-trigger" id="search-btn" aria-label="Buscar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
         <span>Buscar en el archivo</span>
         <span class="search-trigger__kbd">/</span>
-      </button>
       <button type="button" class="icon-btn" id="theme-btn" aria-label="Cambiar tema"></button>
       <div class="auth-wrap" id="auth-wrap"></div>
     </div>
@@ -117,10 +116,10 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><path d="M8.5 3.5 4 5.8l1.8 3.6 2.3-1.4V20h7.8V8l2.3 1.4L20 5.8l-4.5-2.3s-1.3 2.2-3.5 2.2-3.5-2.2-3.5-2.2z"/></svg>
     Camisetas
   </a>
-  <button type="button" class="tabbar__link" id="search-btn-mobile">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
-    Buscar
-  </button>
+  <a class="tabbar__link" data-nav="juego" href="#/juego">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 3.5 4 5.8l1.8 3.6 2.3-1.4V20h7.8V8l2.3 1.4L20 5.8l-4.5-2.3s-1.3 2.2-3.5 2.2-3.5-2.2-3.5-2.2z"/><path d="M11 11.4a1.3 1.3 0 1 1 1.7 1.2v1"/><circle cx="12.2" cy="16.4" r=".6" fill="currentColor"/></svg>
+    Jugar
+  </a>
   <a class="tabbar__link" data-nav="partidos" href="#/coleccion">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="4" y="4" width="6.5" height="6.5" rx="1.4"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.4"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.4"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.4"/></svg>
     Partidos
