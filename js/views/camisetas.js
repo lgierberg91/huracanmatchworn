@@ -11,6 +11,7 @@
  */
 
 import { esc, qs, observeReveals, fragment } from '../lib/dom.js';
+import { icon } from '../lib/icons.js';
 import { num, plural, decadeLabel } from '../lib/format.js';
 import { allYears, matchesOfYear, globalStats } from '../data/store.js';
 import { kitsForYear, kitCount, roleCounts, ROLE_LABEL, SEASON_KITS } from '../data/seasonKits.js';
@@ -59,11 +60,18 @@ function yearBlockHTML(year, kits) {
         <div class="tl-year__meta mono">
           ${kits.length ? `<span class="chip chip--red chip--static">${plural(kits.length, 'camiseta', 'camisetas')}</span>` : ''}
           ${brand ? `<span class="chip chip--static">${esc(brand)}</span>` : ''}
-          <a href="#/temporada/${year}">${plural(matches.length, 'partido', 'partidos')} →</a>
         </div>
         <div class="tl-year__kits">
           ${kits.length ? kits.map(kitCardHTML).join('') : emptyYearHTML(year, matches.length)}
         </div>
+        <a class="tl-year__cta" href="#/temporada/${year}">
+          <span class="tl-year__cta-icon">${icon('shirt')}</span>
+          <span class="tl-year__cta-text">
+            <strong>Ver qué camiseta se usó en cada partido</strong>
+            <span>Los ${plural(matches.length, 'partido', 'partidos')} de ${year}, uno por uno</span>
+          </span>
+          <span class="tl-year__cta-arrow">${icon('arrowRight')}</span>
+        </a>
       </div>
     </section>`;
 }
