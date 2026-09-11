@@ -1,5 +1,8 @@
 /**
- * "Vestidor": vive dentro del hero, en el lugar de la vieja "pieza del día".
+ * "Vestidor": el corazón del Kit Creator (js/views/kitCreator.js). Estuvo metido
+ * en el hero de la home; ahora tiene sección propia, que es donde se puede
+ * disfrutar sin competirle el lugar al archivo.
+ *
  * Muestra una foto pre-generada con IA (jugador histórico + camiseta de una
  * temporada) elegida por el visitante mediante chips. Al cambiar de jugador
  * o temporada se simula una breve instancia de "generación" (con leyenda)
@@ -19,7 +22,7 @@ export function dressUpHTML() {
   const player = HERO_PLAYERS[0];
   const showPlayerPicker = HERO_PLAYERS.length > 1;
 
-  return `<div class="hero__piece dressup" id="dressup">
+  return `<div class="dressup" id="dressup">
       <div class="dressup__stage">
         <img class="dressup__photo" id="dressup-photo" alt="">
         <div class="dressup__overlay" id="dressup-overlay" hidden>
@@ -29,11 +32,17 @@ export function dressUpHTML() {
       </div>
       <div class="dressup__controls">
         ${showPlayerPicker
-          ? `<div class="chip-row" id="dressup-players" role="group" aria-label="Jugador">
-              ${HERO_PLAYERS.map((p, i) => `<button type="button" class="chip${i === 0 ? ' is-on' : ''}" data-id="${p.id}">${esc(p.name)}</button>`).join('')}
+          ? `<div class="dressup__group">
+              <p class="dressup__label" id="dressup-players-label">Jugador</p>
+              <div class="chip-row" id="dressup-players" role="group" aria-labelledby="dressup-players-label">
+                ${HERO_PLAYERS.map((p, i) => `<button type="button" class="chip${i === 0 ? ' is-on' : ''}" data-id="${p.id}">${esc(p.name)}</button>`).join('')}
+              </div>
             </div>`
           : `<p class="dressup__player-name">${esc(player.name)}</p>`}
-        <div class="chip-row" id="dressup-seasons" role="group" aria-label="Temporada"></div>
+        <div class="dressup__group">
+          <p class="dressup__label" id="dressup-seasons-label">Camiseta</p>
+          <div class="chip-row" id="dressup-seasons" role="group" aria-labelledby="dressup-seasons-label"></div>
+        </div>
       </div>
     </div>`;
 }

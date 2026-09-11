@@ -16,7 +16,10 @@ export const ADMIN_FN_URL = `${SUPABASE_URL}/functions/v1/admin-users`;
 export const CREST_DIR = 'assets/clubs';
 export const HURACAN_CREST = `${CREST_DIR}/huracan.png`;
 
-/** Carpeta del "vestidor" del hero (fotos pre-generadas con IA). Ver js/data/dressup.js. */
+/** Carpeta de las fotos de camiseta. Alimenta la línea de tiempo y el Kit Creator. */
+export const JERSEY_DIR = 'assets/camisetas';
+
+/** Carpeta de las fotos pre-generadas con IA (el jugador ya con la camiseta puesta). Ver js/data/dressup.js. */
 export const HERO_DIR = 'assets/hero';
 
 export const FIRST_YEAR = 1973;
