@@ -10,6 +10,7 @@ import {
   globalStats, featured, onThisDay, latestPlayed, nextFixtures, facetCounts,
 } from '../data/store.js';
 import { crestHTML } from '../components/crest.js';
+import { dressUpCompactHTML, mountDressUpCompact } from '../components/dressup.js';
 import { jerseyHTML } from '../components/jersey.js';
 import { matchCardHTML, matchHref } from '../components/matchCard.js';
 import { sectionHead, statHTML } from '../components/ui.js';
@@ -33,12 +34,7 @@ function heroHTML(stats) {
             ${statHTML({ value: stats.withKit, label: 'Camisetas', note: stats.withKit ? '' : 'todavía ninguna' })}
           </div>
         </div>
-        <figure class="hero__art">
-          <img src="assets/ilustraciones/estadio-huracan.jpg"
-            alt="Ilustración del Estadio Tomás A. Ducó, en Parque Patricios"
-            width="1100" height="825" fetchpriority="high" decoding="async">
-          <figcaption class="mono">Estadio Tomás A. Ducó · Parque Patricios</figcaption>
-        </figure>
+        ${dressUpCompactHTML()}
       </div>
     </section>`;
 }
@@ -204,5 +200,6 @@ export function renderHome() {
 }
 
 export function mountHome() {
+  return mountDressUpCompact();
 }
 

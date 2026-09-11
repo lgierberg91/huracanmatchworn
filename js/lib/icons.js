@@ -12,6 +12,7 @@ export const icons = {
   arrowRight: P('<path d="M5 12h14M13 6l6 6-6 6"/>'),
   arrowLeft: P('<path d="M19 12H5M11 18l-6-6 6-6"/>'),
   chevronRight: P('<path d="m9 6 6 6-6 6"/>'),
+  chevronLeft: P('<path d="m15 6-6 6 6 6"/>'),
   chevronDown: P('<path d="m6 9 6 6 6-6"/>'),
   star: P('<path d="M12 3.6l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.8l5.9-.9z"/>'),
   heart: P('<path d="M12 20s-7.2-4.4-9-9a5 5 0 0 1 9-3.2A5 5 0 0 1 21 11c-1.8 4.6-9 9-9 9z"/>'),

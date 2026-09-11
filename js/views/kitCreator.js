@@ -46,5 +46,5 @@ export function renderKitCreator() {
 }
 
 export function mountKitCreator() {
-  mountDressUp();
+  return mountDressUp();
 }
