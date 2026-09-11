@@ -23,9 +23,30 @@ export const HERO_PLAYERS = [
     id: 'houseman',
     name: 'René Houseman',
     seasons: [
+      { year: 1973, file: '1973/Houseman1973.png' },
       { year: 2014, file: '2014/Houseman2014.jpeg' },
       { year: 2015, file: '2015/Houseman2015.jpeg' },
       { year: 2026, file: '2026/Houseman2026.jpeg' },
+    ],
+  },
+  {
+    id: 'brindisi',
+    name: 'Miguel Brindisi',
+    seasons: [
+      { year: 1973, file: '1973/Brindisi1973.png' },
+      { year: 2014, file: '2014/Brindisi2014.png' },
+      { year: 2015, file: '2015/Brindisi2015.png' },
+      { year: 2026, file: '2026/Brindisi2026.png' },
+    ],
+  },
+  {
+    id: 'wanchope-abila',
+    name: 'Wanchope Ábila',
+    seasons: [
+      { year: 1973, file: '1973/Abila1973.png' },
+      { year: 2014, file: '2014/Abila2014.png' },
+      { year: 2015, file: '2015/Abila2015.png' },
+      { year: 2026, file: '2026/Abila2026.png' },
     ],
   },
   {
@@ -37,11 +58,6 @@ export const HERO_PLAYERS = [
     id: 'montenegro',
     name: 'Montenegro',
     seasons: [{ year: 2026, file: '2026/Montenegro_2026.jpeg' }],
-  },
-  {
-    id: 'wanchope-abila',
-    name: 'Wanchope Ábila',
-    seasons: [{ year: 2026, file: '2026/Wanchope2026.jpeg' }],
   },
   {
     id: 'kaku-gamarra',
