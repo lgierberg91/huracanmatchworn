@@ -2,8 +2,9 @@
  * "¿Qué camiseta es?" — el minijuego.
  *
  * Se muestra una camiseta del archivo con el sponsor y el logo de la marca
- * tapados, y se responde en orden: marca → sponsor → cuántas temporadas se usó
- * ese modelo → cuáles. Cada acierto suma; rendirse muestra la respuesta.
+ * tapados, y se responde en orden: marca → sponsor → temporada. Cuando se sabe
+ * que un modelo duró varias temporadas, antes de elegirlas se pregunta cuántas
+ * fueron. Cada acierto suma; rendirse muestra la respuesta.
  *
  * Los datos y las zonas a tapar están en js/data/quiz.js.
  */
@@ -11,7 +12,7 @@
 import { esc, qs, qsa, on, observeReveals } from '../lib/dom.js';
 import { icon } from '../lib/icons.js';
 import { num } from '../lib/format.js';
-import { playableKits, fullyLoadedKits, buildRound, masksFor, matches, normalize } from '../data/quiz.js';
+import { playableKits, fullyLoadedKits, buildRound, masksFor, matches, normalize, QUIZ_KITS } from '../data/quiz.js';
 import { SEASON_KITS } from '../data/seasonKits.js';
 import { shirtBounds, toPhotoSpace, renderedImageRect } from '../lib/shirtBounds.js';
 import { statHTML } from '../components/ui.js';
@@ -104,9 +105,15 @@ async function applyMasks(kit) {
 
 
 function seasonGridHTML(step) {
-  // se ofrecen todas las temporadas del archivo que tengan camiseta, más las correctas
-  const years = [...new Set([...SEASON_KITS.map((k) => String(k.year)), ...step.targets])]
-    .sort((a, b) => Number(a) - Number(b));
+  // Se ofrecen todas las temporadas con camiseta conocida — las del catálogo y las
+  // del mazo del juego — más las correctas, que nunca pueden faltar de la grilla.
+  const years = [
+    ...new Set([
+      ...SEASON_KITS.map((k) => String(k.year)),
+      ...QUIZ_KITS.map((k) => String(k.year)),
+      ...step.targets.map(String),
+    ]),
+  ].sort((a, b) => Number(a) - Number(b));
   return `<div class="quiz-seasons">
       ${years.map((y) => `<button type="button" class="quiz-season" data-season="${esc(y)}">${esc(y)}</button>`).join('')}
     </div>`;
@@ -158,7 +165,7 @@ function panelHTML() {
         <p class="lede">Acertaste ${game.correct} de ${game.answered} ${game.answered === 1 ? 'pregunta' : 'preguntas'} en esta camiseta.</p>
         <div class="quiz-actions">
           <button type="button" class="btn btn--primary" id="q-next">${icon('arrowRight')} Otra camiseta</button>
-          <a class="btn btn--ghost" href="#/camiseta/${encodeURIComponent(round.kit.id)}">Ver su ficha</a>
+          <a class="btn btn--ghost" href="#/temporada/${round.kit.year}">Ver la temporada ${round.kit.year}</a>
         </div>
       </div>`;
   }
@@ -344,8 +351,8 @@ export function renderJuego() {
 
       ${complete.length < pool.length
         ? `<p class="stat__note" style="margin-top:26px">
-            ${num(complete.length)} de ${num(pool.length)} camisetas tienen las cuatro preguntas cargadas.
-            Las demás juegan sólo con lo que se sabe — el sponsor y las temporadas se completan en
+            Las ${num(pool.length)} camisetas del mazo preguntan marca y temporada.
+            ${num(complete.length)} tienen además el sponsor cargado; el resto se completa en
             <code>js/data/quiz.js</code>.
           </p>`
         : ''}

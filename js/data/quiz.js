@@ -2,26 +2,52 @@
  * "¿Qué camiseta es?" — datos del minijuego.
  *
  * El juego muestra la foto de una camiseta del archivo con el sponsor y el logo
- * de la marca tapados, y va preguntando: marca → sponsor → cuántas temporadas
- * se usó ese modelo → cuáles.
+ * de la marca tapados, y va preguntando: marca → sponsor → temporada.
+ *
+ * DE DÓNDE SALEN LAS FOTOS
+ * Del registro viejo de camisetas sueltas (JERSEYS, en js/data/dressup.js), NO
+ * del catálogo clasificado que alimenta la línea de tiempo. Es a propósito: las
+ * zonas tapadas están ajustadas a estas fotos y cambiarlas dejaría los parches
+ * en cualquier lado. Para pasar el juego al catálogo nuevo hay que reemplazar
+ * QUIZ_KITS por SEASON_KITS y volver a ajustar MASKS foto por foto.
  *
  * QUÉ ESTÁ CARGADO Y QUÉ NO
- * - La marca sale sola de las eras de indumentaria (js/data/brands.js), que es
- *   un dato real que ya traía el proyecto.
- * - El sponsor y las temporadas NO los sé y no se inventan: hay que cargarlos
- *   acá abajo. Mientras una camiseta no los tenga, esa pregunta se saltea.
+ * - La marca sale sola de las eras de indumentaria (js/data/brands.js).
+ * - La temporada sale del año de la propia camiseta, así que la pregunta existe
+ *   siempre.
+ * - El sponsor NO lo sé y no se inventa: hay que cargarlo acá abajo. Mientras una
+ *   camiseta no lo tenga, esa pregunta se saltea.
+ * - `seasons` sirve para los modelos que se usaron más de una temporada: si está
+ *   cargado, el juego pregunta primero cuántas fueron y después cuáles.
  *
- * PARA SUMAR UNA CAMISETA AL JUEGO
+ * PARA SUMAR DATOS DE UNA CAMISETA
  *   'id-de-la-camiseta': {
  *     brand: 'Kappa',                  // opcional: si falta, se usa la era del año
  *     sponsors: ['Sponsor Principal'], // uno o varios; acepta alias
- *     seasons: ['2024', '2025'],       // temporadas en que se usó ese modelo
+ *     seasons: ['2024', '2025'],       // sólo si el modelo duró más de una
  *   }
- * El id es el mismo de js/data/dressup.js ('2025-v2', '2019-ringo', etc.).
+ * El id es el mismo de JERSEYS ('2025-v2', '2019-ringo', etc.).
  */
 
-import { SEASON_KITS, seasonKitById } from './seasonKits.js';
+import { JERSEYS } from './dressup.js';
 import { brandForYear } from './brands.js';
+
+/** '2025-v3' -> 2025 · '2019-ringo' -> 2019 */
+function yearOf(id) {
+  const found = String(id).match(/(19|20)\d{2}/);
+  return found ? Number(found[0]) : null;
+}
+
+/** El mazo del juego: las fotos viejas, con el año que se les puede leer al id. */
+export const QUIZ_KITS = JERSEYS.map((jersey) => ({
+  id: jersey.id,
+  label: jersey.label,
+  src: jersey.src,
+  year: yearOf(jersey.id),
+})).filter((kit) => kit.year);
+
+const QUIZ_BY_ID = new Map(QUIZ_KITS.map((k) => [k.id, k]));
+export const quizKitById = (id) => QUIZ_BY_ID.get(id) || null;
 
 /** Respuestas cargadas a mano. Empieza vacío a propósito. */
 export const ANSWERS = {
@@ -70,12 +96,16 @@ export const matches = (given, expected) => normalize(given) === normalize(expec
  * Las que no tienen dato cargado no aparecen.
  */
 export function buildRound(kitId) {
-  const kit = seasonKitById(kitId);
+  const kit = quizKitById(kitId);
   if (!kit) return null;
 
   const answer = ANSWERS[kitId] || {};
   const brand = answer.brand || brandForYear(kit.year);
-  const seasons = answer.seasons && answer.seasons.length ? answer.seasons : null;
+
+  // Si nadie cargó en qué temporadas se usó el modelo, la respuesta es el año de
+  // la propia camiseta: un dato que ya tenemos y que no hace falta inventar.
+  const multiSeason = Boolean(answer.seasons && answer.seasons.length);
+  const seasons = multiSeason ? answer.seasons.map(String) : [String(kit.year)];
 
   const steps = [];
 
@@ -101,7 +131,9 @@ export function buildRound(kitId) {
     });
   }
 
-  if (seasons) {
+  // Cuántas temporadas duró el modelo sólo tiene sentido preguntarlo cuando
+  // alguien cargó el dato: si no, la respuesta sería siempre "una".
+  if (multiSeason) {
     steps.push({
       id: 'cuantas',
       kind: 'number',
@@ -110,29 +142,30 @@ export function buildRound(kitId) {
       accepts: [String(seasons.length)],
       reveal: `${seasons.length}`,
     });
-    steps.push({
-      id: 'temporadas',
-      kind: 'seasons',
-      title: 'Seleccioná las temporadas correctas',
-      targets: seasons,
-      reveal: seasons.join(', '),
-    });
   }
+
+  steps.push({
+    id: 'temporadas',
+    kind: 'seasons',
+    title: multiSeason ? 'Seleccioná las temporadas en que se usó' : '¿De qué temporada es esta camiseta?',
+    targets: seasons,
+    reveal: seasons.join(', '),
+  });
 
   return { kit, steps, brand, seasons };
 }
 
 /** Camisetas que tienen al menos una pregunta respondible. */
 export function playableKits() {
-  return SEASON_KITS.filter((kit) => {
+  return QUIZ_KITS.filter((kit) => {
     const round = buildRound(kit.id);
     return round && round.steps.length > 0;
   });
 }
 
-/** Cuántas están completas (las cuatro preguntas). */
+/** Cuántas tienen además el sponsor cargado, que es el dato que falta. */
 export const fullyLoadedKits = () =>
-  SEASON_KITS.filter((kit) => {
+  QUIZ_KITS.filter((kit) => {
     const answer = ANSWERS[kit.id];
-    return answer && answer.sponsors && answer.sponsors.length && answer.seasons && answer.seasons.length;
+    return answer && answer.sponsors && answer.sponsors.length;
   });
