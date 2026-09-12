@@ -65,3 +65,33 @@ export function brandForYear(year) {
   const era = BRAND_ERAS.find((e) => year >= e.from && year <= e.to);
   return era ? era.name : null;
 }
+
+/**
+ * Sponsor principal del pecho, temporada por temporada.
+ *
+ * Cada uno salió de mirar la foto de una camiseta de ese año, no de buscarlo por
+ * ahí. Los años que no están es porque no hay foto que lo confirme: 2021 sólo
+ * tiene la de arquero, que va sin sponsor.
+ *
+ * PARA SUMAR UNO: miralo en la foto de la camiseta de ese año y agregá la línea.
+ * Sólo lo que se ve; si la foto no lo muestra, el año no va.
+ */
+export const SPONSOR_BY_YEAR = {
+  2026: 'Mr.Bet',
+  2025: 'Jeluz',
+  2024: 'Decrypto',
+  2023: 'Decrypto',
+  2022: 'Banco Ciudad',
+  2020: 'Banco Ciudad',
+  2019: 'Banco Ciudad',
+  2018: 'Banco Ciudad',
+  2017: 'Banco Ciudad',
+  2016: 'LN Seguros',
+  2015: 'LN Seguros',
+  2014: 'LN Seguros',
+  2013: 'Banco Ciudad',
+  2012: 'Banco Ciudad',
+};
+
+/** Sponsor del pecho en ese año, o null si nadie lo confirmó. */
+export const sponsorForYear = (year) => SPONSOR_BY_YEAR[Number(year)] || null;

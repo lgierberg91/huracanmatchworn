@@ -11,7 +11,7 @@ import { icon } from '../lib/icons.js';
 import { plural } from '../lib/format.js';
 import { matchesOfYear, record } from '../data/store.js';
 import { seasonKitById, kitsForYear, ROLE_LABEL } from '../data/seasonKits.js';
-import { brandForYear } from '../data/brands.js';
+import { brandForYear, sponsorForYear } from '../data/brands.js';
 import { matchRowHTML, emptyStateHTML } from '../components/matchCard.js';
 import { sectionHead, splitBarHTML } from '../components/ui.js';
 
@@ -33,6 +33,7 @@ export function renderCamiseta(ctx) {
   const matches = matchesOfYear(kit.year);
   const balance = record(matches);
   const brand = brandForYear(kit.year);
+  const sponsor = sponsorForYear(kit.year);
   const siblings = kitsForYear(kit.year).filter((k) => k.id !== kit.id);
 
   return `<section class="skit-hero">
@@ -50,6 +51,7 @@ export function renderCamiseta(ctx) {
                 ? ''
                 : `<span class="chip chip--onDark">${esc(ROLE_LABEL[kit.role] || ROLE_LABEL.null)}</span>`}
               ${brand ? `<span class="chip chip--onDark">${esc(brand)}</span>` : ''}
+              ${sponsor ? `<span class="chip chip--onDark">${esc(sponsor)}</span>` : ''}
               ${kit.variant ? `<span class="chip chip--onDark">Variante ${esc(kit.variant)}</span>` : ''}
             </div>
             ${kit.note ? `<p class="lede" style="color:var(--on-dark-2);margin-top:18px">${esc(kit.note)}</p>` : ''}

@@ -27,7 +27,7 @@ import {
   SEASON_KITS,
   TYPE_OPTIONS,
 } from '../data/seasonKits.js';
-import { brandForYear, BRAND_ERAS } from '../data/brands.js';
+import { brandForYear, sponsorForYear, BRAND_ERAS } from '../data/brands.js';
 import { familyById } from '../data/competitions.js';
 import { statHTML } from '../components/ui.js';
 import { jerseyHTML } from '../components/jersey.js';
@@ -107,6 +107,7 @@ function emptyYearHTML(year, matchCount) {
 function yearBlockHTML(year, kits) {
   const matches = matchesOfYear(year);
   const brand = brandForYear(year);
+  const sponsor = sponsorForYear(year);
   const outfield = kits.filter((k) => k.role !== 'arquero');
   const keepers = kits.filter((k) => k.role === 'arquero');
 
@@ -127,6 +128,7 @@ function yearBlockHTML(year, kits) {
         <div class="tl-year__meta mono">
           ${kits.length ? `<span class="chip chip--red chip--static">${plural(kits.length, 'camiseta', 'camisetas')}</span>` : ''}
           ${brand ? `<span class="chip chip--static">${esc(brand)}</span>` : ''}
+          ${sponsor ? `<span class="chip chip--static">${esc(sponsor)}</span>` : ''}
         </div>
         ${rows.join('')}
         <a class="tl-year__cta" href="#/temporada/${year}">
