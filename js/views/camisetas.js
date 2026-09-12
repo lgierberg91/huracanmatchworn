@@ -72,6 +72,16 @@ function competitionOptions() {
 
 /* ---------------- piezas ---------------- */
 
+/**
+ * El rol sólo se aclara si dice algo que el nombre no dice ya: en una camiseta
+ * de arquero el nombre ES "Arquero" y repetirlo abajo sobra.
+ */
+function kitSubHTML(kit) {
+  const role = ROLE_LABEL[kit.role] || ROLE_LABEL.null;
+  if (role === kit.label) return '';
+  return `<span class="skit__role mono">${esc(role)}</span>`;
+}
+
 function kitCardHTML(kit) {
   return `<a class="skit reveal" href="${seasonKitHref(kit)}">
       <div class="skit__stage">
@@ -79,7 +89,7 @@ function kitCardHTML(kit) {
       </div>
       <div class="skit__body">
         <strong class="skit__label">${esc(kit.label)}</strong>
-        <span class="skit__role mono">${esc(ROLE_LABEL[kit.role] || ROLE_LABEL.null)}</span>
+        ${kitSubHTML(kit)}
       </div>
     </a>`;
 }

@@ -46,7 +46,9 @@ export function renderCamiseta(ctx) {
             <span class="eyebrow eyebrow--dark">Temporada ${kit.year}</span>
             <h1>${esc(kit.label)}</h1>
             <div class="chip-row" style="margin-top:22px">
-              <span class="chip chip--onDark">${esc(ROLE_LABEL[kit.role] || ROLE_LABEL.null)}</span>
+              ${(ROLE_LABEL[kit.role] || ROLE_LABEL.null) === kit.label
+                ? ''
+                : `<span class="chip chip--onDark">${esc(ROLE_LABEL[kit.role] || ROLE_LABEL.null)}</span>`}
               ${brand ? `<span class="chip chip--onDark">${esc(brand)}</span>` : ''}
               ${kit.variant ? `<span class="chip chip--onDark">Variante ${esc(kit.variant)}</span>` : ''}
             </div>
@@ -73,7 +75,9 @@ export function renderCamiseta(ctx) {
                     <div class="skit__stage"><img src="${esc(s.src)}" alt="${esc(s.label)}" loading="lazy"></div>
                     <div class="skit__body">
                       <strong class="skit__label">${esc(s.label)}</strong>
-                      <span class="skit__role mono">${esc(ROLE_LABEL[s.role] || ROLE_LABEL.null)}</span>
+                      ${(ROLE_LABEL[s.role] || ROLE_LABEL.null) === s.label
+                        ? ''
+                        : `<span class="skit__role mono">${esc(ROLE_LABEL[s.role] || ROLE_LABEL.null)}</span>`}
                     </div>
                   </a>`
                 )

@@ -72,5 +72,9 @@ export const VENUE_SHORT = { H: 'Local', A: 'Visitante', N: 'Neutral' };
 export const venueLong = (v) => VENUE_LONG[v] || 'Sin dato';
 export const venueShort = (v) => VENUE_SHORT[v] || '—';
 
-/** Ordinal de década: 1970 -> "años 70" */
-export const decadeLabel = (decade) => `Años ${String(decade).slice(2)}`;
+/**
+ * Década con el siglo puesto: 1970 -> "1970s", 2020 -> "2020s".
+ * "Años 20" se leía como 1920, que en un archivo que arranca en 1973 y llega a
+ * hoy es exactamente la confusión que hay que evitar.
+ */
+export const decadeLabel = (decade) => `${decade}s`;

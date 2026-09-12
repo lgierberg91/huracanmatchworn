@@ -142,13 +142,15 @@ function catalogueKits() {
       const type = KIT_TYPES[entry.kind];
       const slot = entry.slot || 1;
       const isKeeper = entry.kind === 'arquero';
+      // El número del arquero ordena y hace único al id, pero no se muestra: las
+      // de arquero no tienen nombre, alcanza con que se vea que son de arquero.
       const id = isKeeper ? `${year}-arquero-${slot}` : `${year}-${entry.kind}`;
       out.push({
         id,
         year,
         kind: entry.kind,
         slot,
-        label: isKeeper ? `Arquero ${slot}` : type.label,
+        label: type.label,
         role: type.role,
         rank: type.rank + (isKeeper ? slot / 100 : 0),
         variant: null,
