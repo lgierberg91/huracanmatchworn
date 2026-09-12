@@ -28,6 +28,7 @@ import {
   saveLineup,
   clearLineup,
   hasContent,
+  isSeeded,
 } from '../data/lineups.js';
 
 const PLACEHOLDER = 'Nombre';
@@ -148,13 +149,19 @@ function noteHTML() {
 }
 
 function toolsHTML() {
-  const { editing, lineup } = state;
+  const { editing, lineup, matchId } = state;
+  const seeded = isSeeded(matchId);
+  const edited = !seeded && hasContent(readLineup(matchId));
+
   if (!editing) {
     return `<div class="lineup__tools">
         <button type="button" class="btn btn--ghost btn--sm" data-role="edit">Editar la formación</button>
-        <span class="stat__note">Lo que cargues queda guardado en este navegador.</span>
+        <span class="stat__note">${seeded
+          ? 'Formación del archivo. Si la editás, tu versión queda guardada en este navegador.'
+          : 'Lo que cargues queda guardado en este navegador.'}</span>
       </div>`;
   }
+
   return `<div class="lineup__tools">
       <label class="lineup__formation">
         <span class="filter-group__label">Formación</span>
@@ -166,8 +173,8 @@ function toolsHTML() {
       </label>
       <button type="button" class="btn btn--primary btn--sm" data-role="save">${icon('check')} Guardar</button>
       <button type="button" class="btn btn--ghost btn--sm" data-role="cancel">Cancelar</button>
-      ${hasContent(readLineup(state.matchId))
-        ? `<button type="button" class="btn btn--ghost btn--sm" data-role="reset">Vaciar</button>`
+      ${edited
+        ? `<button type="button" class="btn btn--ghost btn--sm" data-role="reset">Descartar mis cambios</button>`
         : ''}
     </div>`;
 }
@@ -257,9 +264,10 @@ export function mountLineup(match) {
     paint();
   });
 
+  /* Borra lo editado a mano. Si el partido trae formación cargada, vuelve a ésa. */
   on(root, 'click', '[data-role="reset"]', () => {
     clearLineup(match.id);
-    state.lineup = emptyLineup(DEFAULT_FORMATION);
+    state.lineup = readLineup(match.id) || emptyLineup(DEFAULT_FORMATION);
     state.editing = false;
     paint();
   });

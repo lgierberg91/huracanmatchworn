@@ -88,6 +88,122 @@ export function emptyLineup(formationId = DEFAULT_FORMATION) {
   };
 }
 
+/* ---------------- lo que viene cargado con el sitio ---------------- */
+
+/** Atajo para escribir un once sin repetir la misma estructura once veces. */
+function eleven(formation, starters, extra = {}) {
+  return {
+    formation,
+    starters: starters.map(([number, name]) => ({ number: String(number), name })),
+    bench: (extra.bench || []).map(([number, name]) => ({ number: String(number), name })),
+    subs: extra.subs || [],
+    kitNote: extra.kitNote || '',
+  };
+}
+
+/**
+ * Formaciones confirmadas, de las fichas de ESPN/Canchallena fecha por fecha.
+ *
+ * DOS ACLARACIONES SOBRE LA EXACTITUD
+ * 1. El dibujo sólo está confirmado donde la fuente lo dice (River 4-4-2 y
+ *    Belgrano de septiembre 4-2-3-1). En el resto se dedujo del orden en que la
+ *    ficha lista a los once, que es el orden habitual arquero → fondo → ataque.
+ *    Puede estar mal sin que estén mal los nombres.
+ * 2. El banco lista sólo a los que efectivamente entraron y están confirmados;
+ *    los cambios sin minuto son los que la crónica no precisó. Lo que no se
+ *    pudo confirmar no se inventa: queda vacío.
+ *
+ * Los dorsales cambian de un partido a otro porque así figuran en las fichas.
+ */
+const SEEDED = {
+  /* --- 2025 --- */
+  '2025-10-05-banfield': eleven('4-3-3', [
+    [1, 'Hernán Galíndez'],
+    [25, 'César Ibáñez'], [30, 'Nehuén Paz'], [6, 'Fabio Pereyra'], [24, 'Tomás Guidara'],
+    [8, 'Leonardo Gil'], [20, 'Emmanuel Ojeda'], [16, 'Rodrigo Cabral'],
+    [10, 'Matko Miljevic'], [21, 'Juan Bisanz'], [23, 'Luciano Giménez'],
+  ]),
+
+  /* --- 2026 --- */
+  '2026-01-23-banfield': eleven('4-3-3', [
+    [1, 'Hernán Galíndez'],
+    [4, 'Federico Vera'], [6, 'Fabio Pereyra'], [30, 'Nehuén Paz'], [19, 'Leandro Lescano'],
+    [20, 'Emmanuel Ojeda'], [15, 'Facundo Waller'], [11, 'Thaiel Peralta'],
+    [8, 'Leonardo Gil'], [7, 'Óscar Cortés'], [9, 'Jordy Caicedo'],
+  ]),
+
+  '2026-03-03-belgrano-de-cordoba': eleven('4-3-3', [
+    [1, 'Hernán Galíndez'],
+    [25, 'César Ibáñez'], [3, 'Lucas Carrizo'], [6, 'Fabio Pereyra'], [34, 'Ignacio Campo'],
+    [8, 'Leonardo Gil'], [20, 'Emmanuel Ojeda'], [7, 'Óscar Cortés'],
+    [10, 'Óscar Romero'], [23, 'Thaiel Peralta'], [9, 'Jordy Caicedo'],
+  ]),
+
+  '2026-03-13-river-plate': eleven('4-4-2', [
+    [1, 'Hernán Galíndez'],
+    [25, 'César Ibáñez'], [3, 'Lucas Carrizo'], [6, 'Fabio Pereyra'], [34, 'Ignacio Campo'],
+    [14, 'Alejandro Martínez'], [8, 'Leonardo Gil'], [20, 'Emmanuel Ojeda'], [23, 'Thaiel Peralta'],
+    [9, 'Jordy Caicedo'], [10, 'Óscar Romero'],
+  ]),
+
+  '2026-05-10-boca-juniors': eleven(
+    '4-3-3',
+    [
+      [1, 'Hernán Galíndez'],
+      [34, 'Ignacio Campo'], [6, 'Fabio Pereyra'], [3, 'Lucas Carrizo'], [19, 'Leandro Lescano'],
+      [15, 'Facundo Waller'], [8, 'Leonardo Gil'], [2, 'Lucas Blondel'],
+      [24, 'Facundo Kalinger'], [7, 'Óscar Cortés'], [9, 'Jordy Caicedo'],
+    ],
+    {
+      bench: [[10, 'Óscar Romero'], ['', 'Eric Ramírez']],
+      subs: [
+        { minute: '', out: '', in: 'Óscar Romero' },
+        { minute: '', out: '', in: 'Eric Ramírez' },
+      ],
+    }
+  ),
+
+  '2026-07-25-banfield': eleven(
+    '4-3-3',
+    [
+      [1, 'Hernán Galíndez'],
+      [2, 'Lucas Blondel'], [6, 'Fabio Pereyra'], [35, 'Máximo Palazzo'], [25, 'César Ibáñez'],
+      [8, 'Leonardo Gil'], [15, 'Facundo Waller'], [11, 'Thaiel Peralta'],
+      [10, 'Óscar Romero'], [7, 'Óscar Cortés'], [9, 'Jordy Caicedo'],
+    ],
+    {
+      bench: [[24, 'Facundo Kalinger']],
+      subs: [{ minute: '', out: 'Facundo Waller', in: 'Facundo Kalinger' }],
+    }
+  ),
+
+  '2026-08-30-estudiantes-de-rio-cuarto': eleven('4-3-3', [
+    [1, 'Hernán Galíndez'],
+    [2, 'Lucas Blondel'], [6, 'Fabio Pereyra'], [35, 'Máximo Palazzo'], [25, 'César Ibáñez'],
+    [8, 'Leonardo Gil'], [15, 'Facundo Waller'], [11, 'Thaiel Peralta'],
+    [10, 'Óscar Romero'], [7, 'Óscar Cortés'], [23, 'Ignacio Pussetto'],
+  ]),
+
+  '2026-09-05-belgrano-de-cordoba': eleven(
+    '4-2-3-1',
+    [
+      [1, 'Hernán Galíndez'],
+      [25, 'César Ibáñez'], [35, 'Máximo Palazzo'], [21, 'Hugo Nervo'], [2, 'Lucas Blondel'],
+      [15, 'Facundo Waller'], [5, 'Rodrigo Fernández Cedrés'],
+      [7, 'Óscar Cortés'], [8, 'Leonardo Gil'], [24, 'Facundo Kalinger'],
+      [9, 'Jordy Caicedo'],
+    ],
+    {
+      bench: [[19, 'Leandro Lescano'], [11, 'Thaiel Peralta'], [33, 'Bruno Barticciotto']],
+      subs: [
+        { minute: '', out: 'César Ibáñez', in: 'Leandro Lescano' },
+        { minute: '', out: 'Óscar Cortés', in: 'Thaiel Peralta' },
+        { minute: '67', out: 'Leonardo Gil', in: 'Bruno Barticciotto' },
+      ],
+    }
+  ),
+};
+
 function readAll() {
   try {
     return JSON.parse(localStorage.getItem(KEY) || '{}');
@@ -96,9 +212,12 @@ function readAll() {
   }
 }
 
-/** Lo cargado para un partido, o null si nadie lo completó. */
+/**
+ * Lo cargado para un partido, o null si nadie lo completó.
+ * Lo editado a mano manda sobre lo que viene cargado en SEEDED.
+ */
 export function readLineup(matchId) {
-  const stored = readAll()[matchId];
+  const stored = readAll()[matchId] || SEEDED[matchId];
   if (!stored) return null;
   const base = emptyLineup(stored.formation || DEFAULT_FORMATION);
   return {
@@ -110,6 +229,9 @@ export function readLineup(matchId) {
     kitNote: stored.kitNote || '',
   };
 }
+
+/** Si viene del archivo y nadie lo editó todavía. */
+export const isSeeded = (matchId) => Boolean(SEEDED[matchId] && !readAll()[matchId]);
 
 export function saveLineup(matchId, lineup) {
   const all = readAll();
