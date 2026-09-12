@@ -297,7 +297,7 @@ a.mini-vs__side:hover{ color: var(--red-bright); }
 */
 .lineup__grid{
   display: grid; gap: clamp(16px, 2vw, 26px);
-  grid-template-columns: minmax(0, 2.15fr) minmax(0, .85fr) minmax(132px, .5fr);
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(132px, .5fr);
   align-items: start;
 }
 .lineup__kit{ display: grid; gap: 16px; align-content: start; }
@@ -348,10 +348,15 @@ a.mini-vs__side:hover{ color: var(--red-bright); }
   /* por encima de la etiqueta del puesto vecino si llegan a tocarse */
   position: relative; z-index: 1;
 }
+/*
+  El apellido puede usar dos renglones antes de recortarse: con cuatro en el
+  fondo, en una sola línea no entra y quedaban todos en "Blo…", "Cor…", "Ibá…".
+*/
 .pitch__name{
-  max-width: 100%; font-size: 11px; line-height: 1.15; color: var(--ink);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  padding: 1px 5px; border-radius: var(--r-sm);
+  max-width: 100%; font-size: 10px; line-height: 1.1; color: var(--ink);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden; overflow-wrap: anywhere; hyphens: auto;
+  padding: 1px 3px; border-radius: var(--r-sm);
   background: color-mix(in srgb, var(--paper) 88%, transparent);
 }
 .bench__name{

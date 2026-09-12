@@ -87,7 +87,7 @@ export function slotsFor(formationId) {
   lines.forEach((count, lineIndex) => {
     const y = lines.length === 1 ? 45 : 74 - (lineIndex * 58) / (lines.length - 1);
     for (let i = 0; i < count; i++) {
-      const x = 14 + (i + 0.5) * (72 / count);
+      const x = BORDE + (i + 0.5) * (ANCHO_UTIL / count);
       const at = slots.length - 1;
       slots.push({ x, y, number: numbers[at] != null ? numbers[at] : at + 2, perLine: count });
     }
@@ -96,8 +96,16 @@ export function slotsFor(formationId) {
   return slots;
 }
 
+/*
+  Cuánto de la cancha se reparten los puestos. Se usa casi todo el ancho a
+  propósito: lo que sobra a los costados es ancho que le falta a cada apellido, y
+  con cuatro en el fondo la diferencia es entre leer "Blondel" y leer "Blo…".
+*/
+const BORDE = 8;
+const ANCHO_UTIL = 84;
+
 /** Ancho de un puesto, en porcentaje del ancho de la cancha. */
-export const slotWidth = (perLine) => 72 / Math.max(perLine || 1, 1);
+export const slotWidth = (perLine) => ANCHO_UTIL / Math.max(perLine || 1, 1);
 
 /** Cuántos van al banco. 12 a 23, como la planilla. */
 export const BENCH_SIZE = 12;

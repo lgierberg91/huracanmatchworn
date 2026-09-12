@@ -111,7 +111,7 @@ function pitchHTML() {
       ${slots
         .map((slot, i) => {
           const player = lineup.starters[i] || { number: slot.number, name: '' };
-          const width = `calc(${slotWidth(slot.perLine).toFixed(2)}% - 6px)`;
+          const width = `calc(${slotWidth(slot.perLine).toFixed(2)}% - 4px)`;
           return `<div class="pitch__slot" style="left:${slot.x}%;top:${slot.y}%;width:${width}">
               ${editing
                 ? `<input class="pitch__num-input" type="text" inputmode="numeric" maxlength="2"
