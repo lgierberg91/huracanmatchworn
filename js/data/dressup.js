@@ -23,7 +23,7 @@ export const HERO_PLAYERS = [
     id: 'houseman',
     name: 'René Houseman',
     seasons: [
-      { year: 1973, file: '1973/Houseman1973.png' },
+      { year: 1973, file: '1973/Houseman1973.jpeg' },
       { year: 2014, file: '2014/Houseman2014.jpeg' },
       { year: 2015, file: '2015/Houseman2015.jpeg' },
       { year: 2026, file: '2026/Houseman2026.jpeg' },
@@ -43,31 +43,49 @@ export const HERO_PLAYERS = [
     id: 'wanchope-abila',
     name: 'Wanchope Ábila',
     seasons: [
-      { year: 1973, file: '1973/Abila1973.png' },
+      { year: 1973, file: '1973/Abila1973.jpeg' },
       { year: 2014, file: '2014/Abila2014.png' },
       { year: 2015, file: '2015/Abila2015.png' },
       { year: 2026, file: '2026/Abila2026.png' },
     ],
   },
   {
-    id: 'turco-garcia',
-    name: 'Turco García',
-    seasons: [{ year: 2026, file: '2026/TurcoGarcia2026.jpeg' }],
+    // "Rolfi 73" y el Montenegro que ya estaba cargado son el mismo: Rolfi Montenegro.
+    id: 'montenegro',
+    name: 'Rolfi Montenegro',
+    seasons: [
+      { year: 1973, file: '1973/Montenegro1973.jpeg' },
+      { year: 2026, file: '2026/Montenegro_2026.jpeg' },
+    ],
   },
   {
-    id: 'montenegro',
-    name: 'Montenegro',
-    seasons: [{ year: 2026, file: '2026/Montenegro_2026.jpeg' }],
+    id: 'turco-garcia',
+    name: 'Turco García',
+    seasons: [
+      { year: 1973, file: '1973/TurcoGarcia1973.jpeg' },
+      { year: 2026, file: '2026/TurcoGarcia2026.jpeg' },
+    ],
   },
   {
     id: 'kaku-gamarra',
     name: 'Kaku Gamarra',
-    seasons: [{ year: 2026, file: '2026/Kaku2026.jpeg' }],
+    seasons: [
+      { year: 1973, file: '1973/Kaku1973.jpeg' },
+      { year: 2026, file: '2026/Kaku2026.jpeg' },
+    ],
   },
   {
     id: 'ignacio-pussetto',
     name: 'Ignacio Pussetto',
-    seasons: [{ year: 2026, file: '2026/Pussetto2026.jpeg' }],
+    seasons: [
+      { year: 1973, file: '1973/Pussetto1973.jpeg' },
+      { year: 2026, file: '2026/Pussetto2026.jpeg' },
+    ],
+  },
+  {
+    id: 'pastore',
+    name: 'Javier Pastore',
+    seasons: [{ year: 1973, file: '1973/Pastore1973.jpeg' }],
   },
 ].map((p) => ({
   ...p,
