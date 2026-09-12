@@ -291,15 +291,18 @@ a.mini-vs__side:hover{ color: var(--red-bright); }
   background: var(--paper-2); padding: clamp(16px, 2.4vw, 28px);
   display: grid; gap: clamp(18px, 2.4vw, 28px);
 }
+/*
+  La camiseta es el núcleo de la app: se lleva más de la mitad del ancho. La
+  formación y el banco son contexto y van chicos, sin pelearle el lugar.
+*/
 .lineup__grid{
-  display: grid; gap: clamp(18px, 2.4vw, 32px);
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.25fr) minmax(190px, .75fr);
+  display: grid; gap: clamp(16px, 2vw, 26px);
+  grid-template-columns: minmax(0, 2.15fr) minmax(0, .85fr) minmax(132px, .5fr);
   align-items: start;
 }
 .lineup__kit{ display: grid; gap: 16px; align-content: start; }
-/* En columna la camiseta ya no necesita el alto de cuando iba a todo el ancho. */
 .lineup__kit .kit-hero__stage{
-  min-height: clamp(240px, 26vw, 380px); padding: clamp(14px, 2vw, 26px);
+  min-height: clamp(340px, 42vw, 600px); padding: clamp(18px, 2.4vw, 36px);
 }
 .lineup__head{ display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .lineup__shape{ font-size: var(--fs-xs); letter-spacing: .1em; color: var(--ink-3); }
@@ -330,43 +333,43 @@ a.mini-vs__side:hover{ color: var(--red-bright); }
 }
 .pitch__slot{
   position: absolute; transform: translate(-50%, -50%);
-  display: grid; justify-items: center; gap: 4px; width: 84px; text-align: center;
+  display: grid; justify-items: center; gap: 3px; width: 60px; text-align: center;
 }
 .pitch__num{
-  display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%;
+  display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
   background: var(--red); color: #fff;
-  font-family: var(--font-mono); font-size: var(--fs-xs); font-weight: 600;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 600;
 }
 .pitch__name, .bench__name{
-  font-size: var(--fs-xs); line-height: 1.2; color: var(--ink);
+  font-size: 11px; line-height: 1.15; color: var(--ink);
   overflow-wrap: anywhere;
 }
 .pitch__name.is-empty, .bench__name.is-empty{ color: var(--ink-3); }
 .pitch__num-input, .bench__num-input{
-  width: 32px; height: 30px; border-radius: 50%; text-align: center;
+  width: 24px; height: 22px; border-radius: 50%; text-align: center;
   border: 1px solid var(--line); background: var(--paper); color: var(--ink);
-  font-family: var(--font-mono); font-size: var(--fs-xs);
+  font-family: var(--font-mono); font-size: 10px; padding: 0;
 }
 .pitch__name-input{
-  width: 84px; text-align: center; border: 1px solid var(--line); border-radius: var(--r-sm);
-  background: var(--paper); color: var(--ink); font-size: var(--fs-xs); padding: 3px 4px;
+  width: 60px; text-align: center; border: 1px solid var(--line); border-radius: var(--r-sm);
+  background: var(--paper); color: var(--ink); font-size: 11px; padding: 2px 3px;
 }
 
 /* el banco */
-.bench__list{ list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 5px; }
+.bench__list{ list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 3px; }
 .bench__row{
-  display: flex; align-items: center; gap: 9px;
-  padding: 5px 9px; border-radius: var(--r-pill); background: var(--paper);
+  display: flex; align-items: center; gap: 7px;
+  padding: 3px 7px; border-radius: var(--r-pill); background: var(--paper);
   border: 1px solid var(--line);
 }
 .bench__num{
-  flex: none; display: grid; place-items: center; width: 24px; height: 24px;
+  flex: none; display: grid; place-items: center; width: 19px; height: 19px;
   border-radius: 50%; background: var(--red); color: #fff;
-  font-family: var(--font-mono); font-size: 11px;
+  font-family: var(--font-mono); font-size: 10px;
 }
 .bench__name-input{
   flex: 1; min-width: 0; border: 0; background: none; color: var(--ink);
-  font-size: var(--fs-xs); outline: none;
+  font-size: 11px; outline: none; padding: 0;
 }
 
 /* los cambios */
