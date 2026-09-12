@@ -101,7 +101,9 @@ export const JERSEYS = [
   { id: '2012-v2', label: '2012 · v2', file: 'Camiseta_2012_2.jpeg' },
   { id: '2013', label: '2013', file: 'Camiseta_2013.jpeg' },
   { id: '2013-v2', label: '2013 · v2', file: 'Camiseta_2013_2.jpeg' },
-  { id: '2013-v3', label: '2013 · v3', file: 'Camiseta2013_3.jpg' },
+  /* Estaba archivada como 2013, pero es la titular 2012: lleva el logo de Kappa
+     y en 2013 el club vistió Joma. Confirmado por Vitto. */
+  { id: '2012-titular', label: '2012 · titular', file: 'Camiseta2012_Titular.jpg' },
   { id: '2015', label: '2015', file: 'Camiseta2015.jpeg' },
   { id: '2015-v2', label: '2015 · v2', file: 'Camiseta2015.jpg' },
   { id: '2016', label: '2016', file: 'Camiseta2016.jpg' },

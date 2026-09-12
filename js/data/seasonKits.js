@@ -124,18 +124,19 @@ const LEGACY_YEARS = new Set([2012, 2013, 2016, 2019]);
  * Qué es cada una de las viejas. Salió de mirarlas: en Huracán la titular es
  * blanca, la suplente roja y cualquier otro color es alternativa.
  *
- * '2013-v3' es la que queda con una duda: es blanca, o sea titular, pero la
- * marca del pecho es el logo de Kappa y no Joma. Según las eras de indumentaria
- * (js/data/brands.js) Kappa vistió al club hasta 2012 y Joma sólo en 2013, así
- * que lo más probable es que sea la TITULAR 2012 mal archivada. No se la movió
- * de año porque eso es una deducción, no algo que alguien haya confirmado.
+ * La que estaba archivada como '2013-v3' resultó ser la titular 2012: es blanca
+ * pero lleva el logo de Kappa, y en 2013 el club vistió Joma. Confirmado por
+ * Vitto, así que se la movió de año y ahora es '2012-titular'.
+ *
+ * FALTA, Y SE SABE QUE EXISTIÓ: la edición especial inspirada en la suplente de
+ * 1997. No hay foto todavía.
  */
 const LEGACY_TYPES = {
   '2012': 'suplente',        // roja, Kappa, Banco Ciudad
   '2012-v2': 'alternativa',  // negra, Kappa, Banco Ciudad
   '2013': 'titular',         // blanca de cuello rojo, Joma, Banco Ciudad
   '2013-v2': 'alternativa',  // azul, Joma, Banco Ciudad
-  '2013-v3': 'titular',      // blanca, Kappa — ver la nota de arriba
+  '2012-titular': 'titular', // blanca, Kappa, Banco Ciudad — ver la nota de arriba
   '2016': 'alternativa',     // verde, TBS, LN Seguros
   '2019': 'titular',         // blanca de rayas finas, TBS, Banco Ciudad
   '2019-ringo': 'especial',  // negra con la silueta de Ringo Bonavena, TBS
@@ -213,7 +214,8 @@ function legacyKits() {
       role: type ? type.role : null,
       // Sin tipo va al final del año, que es donde no molesta.
       rank: type ? type.rank : 50,
-      variant: variantOf(jersey.id),
+      // La variante sólo tiene sentido mientras no sepamos qué es la camiseta.
+      variant: kind ? null : variantOf(jersey.id),
       note: NOTES[jersey.id] || null,
       src: jersey.src,
       file: jersey.file,
