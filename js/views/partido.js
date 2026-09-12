@@ -15,6 +15,7 @@ import { sectionHead, splitBarHTML } from '../components/ui.js';
 import { contributeHTML, mountContribute } from '../components/contribute.js';
 import { kitEditorHTML, mountKitEditor } from '../components/kitEditor.js';
 import { lineupHTML, mountLineup } from '../components/lineup.js';
+import { videoFor } from '../data/videos.js';
 import { fetchPhotos, fetchKits, photoUrl } from '../data/api.js';
 import { isMember } from '../data/auth.js';
 import { HURACAN, clubShort } from '../data/clubs.js';
@@ -28,6 +29,18 @@ function youtubeId(url) {
     /(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{6,})/
   );
   return m ? m[1] : null;
+}
+
+/**
+ * El video del partido. Lo cargado en la base manda; si no hay, se usa el que
+ * encontró la búsqueda en YouTube (js/data/videos.js), que viene con su título
+ * a la vista justamente para que un video equivocado se note.
+ */
+function videoDelPartido(match) {
+  if (match.youtube_url) {
+    return { url: match.youtube_url, titulo: '', canal: '', confianza: 'base' };
+  }
+  return videoFor(match.id);
 }
 
 const wash = (match) => {
@@ -142,28 +155,45 @@ function kitMetaHTML(kit) {
   return chips.length ? `<div class="chip-row">${chips.join('')}</div>` : '';
 }
 
-/** Camiseta protagonista, a todo el ancho de pantalla. */
+/** Camiseta protagonista. */
 function kitStageHTML(match) {
   const hasPhoto = Boolean(match.kitPhoto);
-  const videoId = youtubeId(match.youtube_url);
+  const video = videoDelPartido(match);
   const placeholderStage = hasPhoto
     ? `<img src="${esc(photoUrl(match.kitPhoto))}" alt="Camiseta usada ante ${esc(match.club.name)}">`
     : jerseyHTML({ size: 220, label: 'Camiseta sin identificar' });
 
-  const videoBadge =
-    videoId || match.youtube_url
-      ? `<a class="kit-hero__video" href="${esc(match.youtube_url)}" target="_blank" rel="noopener" title="Ver el partido en YouTube">
-          ${icon('play')} Ver video
-        </a>`
-      : '';
+  const videoBadge = video
+    ? `<a class="kit-hero__video" href="${esc(video.url)}" target="_blank" rel="noopener"
+          title="${esc(video.titulo || 'Ver el partido en YouTube')}">
+        ${icon('play')} Ver video
+      </a>`
+    : '';
 
   return `<div class="kit-hero">
       <button type="button" class="icon-btn kit-role-btn" id="kit-role-btn" title="Ver camiseta de arquero" aria-label="Ver camiseta de arquero">${icon('glove')}</button>
       <div class="kit-hero__stage" id="kit-stage">${placeholderStage}</div>
       ${videoBadge}
     </div>
+    ${videoHTML(video)}
     <div id="kit-tiles" class="kit-gallery"></div>
     <div id="photo-gallery" class="kit-gallery"></div>`;
+}
+
+/**
+ * La ficha del video, debajo de la camiseta. Se muestra el título y el canal
+ * a propósito: si la búsqueda automática pegó mal, se ve de una.
+ */
+function videoHTML(video) {
+  if (!video || !video.titulo) return '';
+  return `<a class="match-video" href="${esc(video.url)}" target="_blank" rel="noopener">
+      <span class="match-video__icon">${icon('play')}</span>
+      <span class="match-video__text">
+        <strong>${esc(video.titulo)}</strong>
+        <span class="mono">${esc(video.canal)}${video.confianza === 'media' ? ' · sin confirmar el año' : ''}</span>
+      </span>
+      <span class="match-video__arrow">${icon('external')}</span>
+    </a>`;
 }
 
 /** Título, datos (marca/parche/publicidades) y formularios de aporte, en el ancho angosto habitual. */

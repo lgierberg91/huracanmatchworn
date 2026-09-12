@@ -406,6 +406,25 @@ a.mini-vs__side:hover{ color: var(--red-bright); }
 .subs__row--edit input:not(.subs__min-input){ flex: 1; }
 .subs__min-input{ width: 62px; flex: none; text-align: center; }
 
+/* la ficha del video, debajo de la camiseta */
+.match-video{
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; border: 1px solid var(--line); border-radius: var(--r-md);
+  background: var(--paper); color: var(--ink);
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+.match-video:hover{ border-color: var(--red); background: var(--paper-2); }
+.match-video__icon{ flex: none; display: inline-flex; color: var(--red); }
+.match-video__icon svg{ width: 22px; height: 22px; }
+.match-video__text{ display: grid; gap: 2px; min-width: 0; }
+.match-video__text strong{
+  font-size: var(--fs-sm); line-height: 1.25;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.match-video__text .mono{ font-size: var(--fs-xs); color: var(--ink-3); }
+.match-video__arrow{ flex: none; margin-left: auto; color: var(--ink-3); }
+.match-video__arrow svg{ width: 15px; height: 15px; }
+
 /* notas de la camiseta */
 .kit-note__text{ font-size: var(--fs-sm); color: var(--ink); margin-top: 8px; }
 .kit-note__input{
