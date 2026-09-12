@@ -1,83 +1,97 @@
 /**
- * "¿Qué camiseta es?" — datos del minijuego.
+ * "¿Qué camiseta es?" — el mazo del minijuego.
  *
- * El juego muestra la foto de una camiseta del archivo con el sponsor y el logo
- * de la marca tapados, y va preguntando: marca → sponsor → temporada.
+ * CÓMO SE JUEGA
+ * Cada camiseta se recorre en tres etapas, cada una con su propia foto:
+ *   1. Foto sin marca ni sponsor  →  ¿de qué marca es?
+ *   2. Foto con la marca puesta   →  ¿qué sponsor lleva en el pecho?
+ *   3. La foto original completa  →  ¿en cuántas temporadas se usó? y ¿cuáles?
  *
- * DE DÓNDE SALEN LAS FOTOS
- * Del registro viejo de camisetas sueltas (JERSEYS, en js/data/dressup.js), NO
- * del catálogo clasificado que alimenta la línea de tiempo. Es a propósito: las
- * zonas tapadas están ajustadas a estas fotos y cambiarlas dejaría los parches
- * en cualquier lado. Para pasar el juego al catálogo nuevo hay que reemplazar
- * QUIZ_KITS por SEASON_KITS y volver a ajustar MASKS foto por foto.
+ * LAS FOTOS
+ * Las de las dos primeras etapas vienen ya tapadas desde afuera y viven en
+ * assets/minijuego/<id>-1.png y -2.png. Por eso acá no hay máscaras ni nada que
+ * recortar: lo que se ve es exactamente el archivo. La tercera etapa reusa la
+ * foto del catálogo (js/data/seasonKits.js), que es la misma camiseta destapada.
  *
- * QUÉ ESTÁ CARGADO Y QUÉ NO
- * - La marca sale sola de las eras de indumentaria (js/data/brands.js).
- * - La temporada sale del año de la propia camiseta, así que la pregunta existe
- *   siempre.
- * - El sponsor NO lo sé y no se inventa: hay que cargarlo acá abajo. Mientras una
- *   camiseta no lo tenga, esa pregunta se saltea.
- * - `seasons` sirve para los modelos que se usaron más de una temporada: si está
- *   cargado, el juego pregunta primero cuántas fueron y después cuáles.
- *
- * PARA SUMAR DATOS DE UNA CAMISETA
- *   'id-de-la-camiseta': {
- *     brand: 'Kappa',                  // opcional: si falta, se usa la era del año
- *     sponsors: ['Sponsor Principal'], // uno o varios; acepta alias
- *     seasons: ['2024', '2025'],       // sólo si el modelo duró más de una
- *   }
- * El id es el mismo de JERSEYS ('2025-v2', '2019-ringo', etc.).
+ * PARA SUMAR UNA CAMISETA
+ * 1. Dejá las dos fotos en assets/minijuego/ con el id de la camiseta:
+ *    "2017-titular-1.png" (sin nada) y "2017-titular-2.png" (con la marca).
+ * 2. Agregá la entrada acá abajo. El `id` tiene que ser el de la camiseta en el
+ *    catálogo, así la etapa 3 encuentra sola la foto original.
+ * 3. `sponsors` es literal lo que dice en el pecho. `seasons` son las temporadas
+ *    en que se usó ESE modelo: si duró más de una, ponelas todas.
  */
 
-import { JERSEYS } from './dressup.js';
-import { brandForYear } from './brands.js';
+import { JERSEY_DIR } from '../config.js';
+import { seasonKitById } from './seasonKits.js';
 
-/** '2025-v3' -> 2025 · '2019-ringo' -> 2019 */
+export const QUIZ_DIR = 'assets/minijuego';
+
+/**
+ * OJO CON `seasons`: hoy las cuatro dicen una sola temporada, la de la propia
+ * camiseta, porque es lo único confirmado. Si alguna se usó también al año
+ * siguiente, sumale el año acá y el juego pasa a preguntar "¿en cuántas?" con
+ * la respuesta correcta.
+ */
+const DECK = [
+  {
+    id: '2017-titular',
+    name: 'Titular 2017',
+    brand: 'TBS',
+    sponsors: ['Banco Ciudad'],
+    seasons: ['2017'],
+  },
+  {
+    id: '2020-suplente',
+    name: 'Suplente 2020',
+    brand: 'TBS',
+    sponsors: ['Banco Ciudad'],
+    seasons: ['2020'],
+  },
+  {
+    id: '2023-arquero-3',
+    name: 'Arquero 2023',
+    brand: 'Kappa',
+    sponsors: ['Decrypto'],
+    seasons: ['2023'],
+  },
+  {
+    id: '2025-suplente',
+    name: 'Suplente 2025',
+    brand: 'Kappa',
+    sponsors: ['Jeluz'],
+    seasons: ['2025'],
+  },
+];
+
+/** '2025-v3' -> 2025 · '2023-arquero-3' -> 2023 */
 function yearOf(id) {
   const found = String(id).match(/(19|20)\d{2}/);
   return found ? Number(found[0]) : null;
 }
 
-/** El mazo del juego: las fotos viejas, con el año que se les puede leer al id. */
-export const QUIZ_KITS = JERSEYS.map((jersey) => ({
-  id: jersey.id,
-  label: jersey.label,
-  src: jersey.src,
-  year: yearOf(jersey.id),
-})).filter((kit) => kit.year);
-
-const QUIZ_BY_ID = new Map(QUIZ_KITS.map((k) => [k.id, k]));
-export const quizKitById = (id) => QUIZ_BY_ID.get(id) || null;
-
-/** Respuestas cargadas a mano. Empieza vacío a propósito. */
-export const ANSWERS = {
-  // '2024': { sponsors: ['Sponsor'], seasons: ['2024', '2025'] },
-};
-
 /**
- * Zonas a tapar, en porcentaje DE LA CAMISETA (no de la foto): {x, y, w, h}.
- * El origen es la esquina superior izquierda.
- *
- * Si una camiseta no tiene zonas propias se usan las de abajo, que cubren los
- * lugares habituales. Conviene ajustarlas foto por foto: se ven en pantalla y
- * es cuestión de mover los números.
+ * El mazo armado: las tres fotos de cada camiseta y su año.
+ * La foto original sale del catálogo; si esa camiseta no estuviera registrada,
+ * la entrada se descarta en vez de romper el juego con una imagen rota.
  */
-export const MASKS = {
-  // '2024': [{ x: 28, y: 40, w: 44, h: 15 }],
-};
+export const QUIZ_KITS = DECK.map((entry) => {
+  const kit = seasonKitById(entry.id);
+  return {
+    ...entry,
+    year: yearOf(entry.id),
+    label: entry.name,
+    photos: {
+      blank: `${QUIZ_DIR}/${entry.id}-1.png`,
+      branded: `${QUIZ_DIR}/${entry.id}-2.png`,
+      full: kit ? kit.src : `${JERSEY_DIR}/${entry.id}.jpg`,
+    },
+    inCatalogue: Boolean(kit),
+  };
+}).filter((kit) => kit.inCatalogue && kit.year);
 
-/**
- * En las camisetas de Huracán la marca va sobre el pecho izquierdo (visto de
- * frente, a la izquierda) y el escudo del globo sobre el derecho. Se tapa la
- * marca y el centro del pecho, donde va el sponsor — el escudo queda a la vista,
- * porque es la pista que hace jugable la foto.
- */
-export const DEFAULT_MASKS = [
-  { x: 16, y: 30, w: 68, h: 26 },  // pecho: sponsor
-  { x: 20, y: 10, w: 24, h: 14 },  // pecho izquierdo: marca
-];
-
-export const masksFor = (kitId) => MASKS[kitId] || DEFAULT_MASKS;
+const BY_ID = new Map(QUIZ_KITS.map((k) => [k.id, k]));
+export const quizKitById = (id) => BY_ID.get(id) || null;
 
 /** Texto comparable: sin acentos, sin signos, en minúsculas. */
 export function normalize(text) {
@@ -92,80 +106,61 @@ export function normalize(text) {
 export const matches = (given, expected) => normalize(given) === normalize(expected);
 
 /**
- * Arma la ronda de una camiseta: la foto y las preguntas que se pueden responder.
- * Las que no tienen dato cargado no aparecen.
+ * Las etapas de una camiseta. Cada una dice qué foto mostrar, así la vista sólo
+ * la cambia sin saber por qué.
  */
 export function buildRound(kitId) {
   const kit = quizKitById(kitId);
   if (!kit) return null;
 
-  const answer = ANSWERS[kitId] || {};
-  const brand = answer.brand || brandForYear(kit.year);
-
-  // Si nadie cargó en qué temporadas se usó el modelo, la respuesta es el año de
-  // la propia camiseta: un dato que ya tenemos y que no hace falta inventar.
-  const multiSeason = Boolean(answer.seasons && answer.seasons.length);
-  const seasons = multiSeason ? answer.seasons.map(String) : [String(kit.year)];
-
+  const seasons = (kit.seasons && kit.seasons.length ? kit.seasons : [String(kit.year)]).map(String);
   const steps = [];
 
-  if (brand) {
-    steps.push({
-      id: 'marca',
-      kind: 'text',
-      title: '¿Cuál es la marca de la indumentaria?',
-      placeholder: 'Escribí la marca…',
-      accepts: [brand],
-      reveal: brand,
-    });
-  }
+  steps.push({
+    id: 'marca',
+    kind: 'text',
+    photo: kit.photos.blank,
+    title: '¿Qué marca es esta camiseta?',
+    placeholder: 'Escribí la marca…',
+    accepts: [kit.brand],
+    reveal: kit.brand,
+  });
 
-  if (answer.sponsors && answer.sponsors.length) {
-    steps.push({
-      id: 'sponsor',
-      kind: 'multi',
-      title: answer.sponsors.length === 1 ? 'Nombrá el sponsor principal' : 'Nombrá los sponsors',
-      placeholder: 'Escribí un sponsor y presioná Enter…',
-      targets: answer.sponsors,
-      reveal: answer.sponsors.join(', '),
-    });
-  }
+  steps.push({
+    id: 'sponsor',
+    kind: 'multi',
+    photo: kit.photos.branded,
+    title: kit.sponsors.length === 1 ? '¿Qué sponsor lleva en el pecho?' : '¿Qué sponsors lleva?',
+    placeholder: 'Escribí el sponsor y presioná Enter…',
+    targets: kit.sponsors,
+    reveal: kit.sponsors.join(', '),
+  });
 
-  // Cuántas temporadas duró el modelo sólo tiene sentido preguntarlo cuando
-  // alguien cargó el dato: si no, la respuesta sería siempre "una".
-  if (multiSeason) {
-    steps.push({
-      id: 'cuantas',
-      kind: 'number',
-      title: '¿En cuántas temporadas se usó este modelo?',
-      placeholder: 'Un número…',
-      accepts: [String(seasons.length)],
-      reveal: `${seasons.length}`,
-    });
-  }
+  // De acá en más se juega con la camiseta destapada: ya no hay nada que ocultar.
+  steps.push({
+    id: 'cuantas',
+    kind: 'number',
+    photo: kit.photos.full,
+    title: '¿En cuántas temporadas se usó este modelo?',
+    placeholder: 'Un número…',
+    accepts: [String(seasons.length)],
+    reveal: `${seasons.length}`,
+  });
 
   steps.push({
     id: 'temporadas',
     kind: 'seasons',
-    title: multiSeason ? 'Seleccioná las temporadas en que se usó' : '¿De qué temporada es esta camiseta?',
+    photo: kit.photos.full,
+    title: seasons.length === 1 ? '¿De qué temporada es?' : '¿En qué temporadas se usó?',
     targets: seasons,
     reveal: seasons.join(', '),
   });
 
-  return { kit, steps, brand, seasons };
+  return { kit, steps, brand: kit.brand, seasons };
 }
 
-/** Camisetas que tienen al menos una pregunta respondible. */
-export function playableKits() {
-  return QUIZ_KITS.filter((kit) => {
-    const round = buildRound(kit.id);
-    return round && round.steps.length > 0;
-  });
-}
+/** Todas las del mazo son jugables: siempre tienen las cuatro respuestas. */
+export const playableKits = () => QUIZ_KITS.slice();
 
-/** Cuántas tienen además el sponsor cargado, que es el dato que falta. */
-export const fullyLoadedKits = () =>
-  QUIZ_KITS.filter((kit) => {
-    const answer = ANSWERS[kit.id];
-    return answer && answer.sponsors && answer.sponsors.length;
-  });
+/** Las que tienen el sponsor cargado — hoy, todas. */
+export const fullyLoadedKits = () => QUIZ_KITS.filter((kit) => kit.sponsors && kit.sponsors.length);

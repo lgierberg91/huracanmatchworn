@@ -1,20 +1,19 @@
 /**
  * "¿Qué camiseta es?" — el minijuego.
  *
- * Se muestra una camiseta del archivo con el sponsor y el logo de la marca
- * tapados, y se responde en orden: marca → sponsor → temporada. Cuando se sabe
- * que un modelo duró varias temporadas, antes de elegirlas se pregunta cuántas
- * fueron. Cada acierto suma; rendirse muestra la respuesta.
+ * Tres etapas, cada una con su propia foto: la camiseta pelada para adivinar la
+ * marca, la misma con la marca puesta para adivinar el sponsor, y la original
+ * destapada para las temporadas. Cada acierto suma; rendirse muestra la
+ * respuesta.
  *
- * Los datos y las zonas a tapar están en js/data/quiz.js.
+ * El mazo y las fotos de cada etapa están en js/data/quiz.js.
  */
 
 import { esc, qs, qsa, on, observeReveals } from '../lib/dom.js';
 import { icon } from '../lib/icons.js';
 import { num } from '../lib/format.js';
-import { playableKits, fullyLoadedKits, buildRound, masksFor, matches, normalize, QUIZ_KITS } from '../data/quiz.js';
+import { playableKits, buildRound, matches, normalize, QUIZ_KITS } from '../data/quiz.js';
 import { SEASON_KITS } from '../data/seasonKits.js';
-import { shirtBounds, toPhotoSpace, renderedImageRect } from '../lib/shirtBounds.js';
 import { statHTML } from '../components/ui.js';
 import { jerseyHTML } from '../components/jersey.js';
 
@@ -34,73 +33,20 @@ const game = {
   revealed: false,
 };
 
-let maskObserver = null;
-let maskToken = 0;
-let painted = null;
+/* Qué foto está puesta ahora, para no reponer la misma y que parpadee. */
+let paintedPhoto = null;
 
 /* ---------------- pintado ---------------- */
 
-function photoHTML(kit) {
-  // Se pinta primero sin las zonas tapadas y se agregan apenas se mide la
-  // camiseta, para no mostrar recuadros en el lugar equivocado ni un instante.
-  return `<figure class="quiz-photo is-measuring">
-      <img src="${esc(kit.src)}" alt="Camiseta a adivinar">
+/*
+  Las fotos ya vienen tapadas de fábrica: la primera sin marca ni sponsor, la
+  segunda con la marca puesta y la tercera destapada. No hay nada que medir ni
+  que recortar — se muestra el archivo que pide la etapa.
+*/
+function photoHTML(src, alt) {
+  return `<figure class="quiz-photo">
+      <img src="${esc(src)}" alt="${esc(alt)}">
     </figure>`;
-}
-
-/**
- * Ubica las zonas tapadas sobre la camiseta de esta foto.
- * Las zonas se definen en porcentaje de la prenda; acá se traducen a la imagen,
- * que en cada foto viene con un encuadre distinto.
- */
-async function applyMasks(kit) {
-  const token = ++maskToken;
-  const first = qs('.quiz-photo img');
-  if (!first) return;
-
-  const [box] = await Promise.all([
-    shirtBounds(kit.src),
-    first.decode().catch(() => {}),
-  ]);
-
-  // El panel se repinta en cada paso, así que hay que volver a buscar el marco:
-  // el que existía al empezar a medir puede haber quedado fuera de la pantalla.
-  if (token !== maskToken) return;
-  const figure = qs('.quiz-photo');
-  const img = figure && figure.querySelector('img');
-  if (!figure || !img) return;
-
-  const place = () => {
-    qsa('.quiz-mask', figure).forEach((m) => m.remove());
-    const frame = figure.getBoundingClientRect();
-    const rect = renderedImageRect(img);
-    const left = rect.left - frame.left;
-    const top = rect.top - frame.top;
-
-    figure.insertAdjacentHTML(
-      'beforeend',
-      masksFor(kit.id)
-        .map((m) => toPhotoSpace(m, box))
-        .map((m) => {
-          const x = left + (m.x / 100) * rect.width;
-          const y = top + (m.y / 100) * rect.height;
-          const w = (m.w / 100) * rect.width;
-          const h = (m.h / 100) * rect.height;
-          return `<span class="quiz-mask" style="left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px"></span>`;
-        })
-        .join('')
-    );
-  };
-
-  place();
-  figure.classList.remove('is-measuring');
-
-  // al cambiar el tamaño del marco, los recuadros se recolocan
-  if (maskObserver) maskObserver.disconnect();
-  if ('ResizeObserver' in window) {
-    maskObserver = new ResizeObserver(place);
-    maskObserver.observe(figure);
-  }
 }
 
 
@@ -189,12 +135,14 @@ function paint() {
   if (!panel) return;
   panel.innerHTML = panelHTML();
   if (board) board.innerHTML = scoreboardHTML();
-  // La foto sólo se rehace al cambiar de camiseta: si se repintara en cada paso
-  // volvería a medirse y parpadearía el difuminado en cada respuesta.
-  if (photo && painted !== game.round.kit.id) {
-    painted = game.round.kit.id;
-    photo.innerHTML = photoHTML(game.round.kit);
-    applyMasks(game.round.kit);
+
+  // Cada etapa trae su propia foto. Se repone sólo cuando cambia de verdad, para
+  // que responder una pregunta no haga parpadear la imagen que ya estaba.
+  const step = game.round.steps[game.step];
+  const src = step ? step.photo : game.round.kit.photos.full;
+  if (photo && paintedPhoto !== src) {
+    paintedPhoto = src;
+    photo.innerHTML = photoHTML(src, `Camiseta ${game.round.kit.label}`);
   }
   const input = qs('#q-input');
   if (input) input.focus();
@@ -311,7 +259,6 @@ function nextKit() {
 
 export function renderJuego() {
   const pool = playableKits();
-  const complete = fullyLoadedKits();
 
   if (!pool.length) {
     return `<section class="quiz-hero">
@@ -324,8 +271,8 @@ export function renderJuego() {
         <div class="empty">
           <span class="empty__icon">${jerseyHTML({ size: 56, showBalloon: false, label: '' })}</span>
           <h4>Todavía no hay camisetas para jugar</h4>
-          <p>El juego necesita saber la marca, el sponsor y las temporadas de cada camiseta.
-             Se cargan en <code>js/data/quiz.js</code>.</p>
+          <p>Cada camiseta del juego necesita sus dos fotos en <code>assets/minijuego/</code>
+             y su entrada en <code>js/data/quiz.js</code>.</p>
         </div>
       </div>`;
   }
@@ -335,8 +282,8 @@ export function renderJuego() {
         <span class="eyebrow eyebrow--dark">Minijuego</span>
         <h1>¿Qué camiseta es?</h1>
         <p class="lede" style="color:var(--on-dark-2);margin-top:14px;max-width:52ch">
-          La foto va con el sponsor y la marca tapados. Adiviná de qué camiseta se trata,
-          dato por dato.
+          Primero la camiseta pelada: ¿de qué marca es? Después aparece la marca y hay
+          que sacar el sponsor. Al final se destapa entera y quedan las temporadas.
         </p>
       </div>
     </section>
@@ -349,13 +296,11 @@ export function renderJuego() {
         <div class="quiz-panel" id="quiz-panel"></div>
       </div>
 
-      ${complete.length < pool.length
-        ? `<p class="stat__note" style="margin-top:26px">
-            Las ${num(pool.length)} camisetas del mazo preguntan marca y temporada.
-            ${num(complete.length)} tienen además el sponsor cargado; el resto se completa en
-            <code>js/data/quiz.js</code>.
-          </p>`
-        : ''}
+      <p class="stat__note" style="margin-top:26px">
+        ${num(pool.length)} ${pool.length === 1 ? 'camiseta' : 'camisetas'} en el mazo.
+        Para sumar otra hacen falta sus dos fotos en <code>assets/minijuego/</code> y su
+        entrada en <code>js/data/quiz.js</code>.
+      </p>
     </div>`;
 }
 
@@ -370,7 +315,7 @@ export function mountJuego() {
   game.correct = 0;
   game.streak = 0;
   game.bestStreak = 0;
-  painted = null;
+  paintedPhoto = null;
   loadRound(game.pool[0].id);
 
   const panel = qs('#quiz-panel');

@@ -863,12 +863,6 @@ textarea.field{ resize: vertical; min-height: 88px; line-height: 1.5; }
   display: grid; place-items: center;
 }
 .quiz-photo img{ width: 100%; height: 100%; object-fit: contain; }
-.quiz-mask{
-  position: absolute; border-radius: var(--r-sm);
-  background: var(--paper-3);
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-  box-shadow: inset 0 0 0 1px var(--line-2);
-}
 
 .quiz-panel{
   background: var(--paper-2); border: 1px solid var(--line);
@@ -986,7 +980,6 @@ textarea.field{ resize: vertical; min-height: 88px; line-height: 1.5; }
 .skit-hero .stat__note{ color: var(--on-dark-3); }
 
 /* mientras se mide la camiseta, la foto se difumina: nunca se ve destapada */
-.quiz-photo.is-measuring img{ filter: blur(18px); }
 .quiz-photo img{ transition: filter var(--t-mid) var(--ease); }
 
 /* ============================================================
