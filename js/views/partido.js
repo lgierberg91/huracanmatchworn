@@ -14,6 +14,7 @@ import { matchCardHTML, matchRowHTML, emptyStateHTML } from '../components/match
 import { sectionHead, splitBarHTML } from '../components/ui.js';
 import { contributeHTML, mountContribute } from '../components/contribute.js';
 import { kitEditorHTML, mountKitEditor } from '../components/kitEditor.js';
+import { lineupHTML, mountLineup } from '../components/lineup.js';
 import { fetchPhotos, fetchKits, photoUrl } from '../data/api.js';
 import { isMember } from '../data/auth.js';
 import { HURACAN, clubShort } from '../data/clubs.js';
@@ -268,7 +269,7 @@ export function renderPartido(ctx) {
 
   return `${heroHTML(match)}
     <div class="match-body">
-      <section class="shell kit-shell reveal">${kitStageHTML(match)}</section>
+      <section class="shell kit-shell">${lineupHTML(kitStageHTML(match))}</section>
       <div class="shell match-layout">
         <section class="kit-section reveal">${kitInfoHTML(match)}</section>
         ${factsStripHTML(match)}
@@ -422,7 +423,11 @@ export function mountPartido(ctx, rerender) {
     document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !lightbox.hidden) close(); });
   }
 
+  const disposeLineup = mountLineup(match);
+
   mountContribute(match, rerender);
   observeReveals(document);
+
+  return () => disposeLineup && disposeLineup();
 }
 

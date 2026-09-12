@@ -281,7 +281,135 @@ a.mini-vs__side:hover{ color: var(--red-bright); }
 .kit-shell{ margin-bottom: clamp(28px, 4vw, 48px); }
 .match-layout{ max-width: var(--shell-narrow); margin-inline: auto; }
 
-/* -- la camiseta, protagonista, a todo el ancho -- */
+/* ============ ficha de partido · formación ============ */
+/*
+  Tres columnas: la camiseta a la izquierda con sus notas debajo, los once en el
+  medio y el banco a la derecha. Los cambios van abajo, cruzando el ancho.
+*/
+.lineup{
+  border: 1px solid var(--line); border-radius: var(--r-xl);
+  background: var(--paper-2); padding: clamp(16px, 2.4vw, 28px);
+  display: grid; gap: clamp(18px, 2.4vw, 28px);
+}
+.lineup__grid{
+  display: grid; gap: clamp(18px, 2.4vw, 32px);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.25fr) minmax(190px, .75fr);
+  align-items: start;
+}
+.lineup__kit{ display: grid; gap: 16px; align-content: start; }
+/* En columna la camiseta ya no necesita el alto de cuando iba a todo el ancho. */
+.lineup__kit .kit-hero__stage{
+  min-height: clamp(240px, 26vw, 380px); padding: clamp(14px, 2vw, 26px);
+}
+.lineup__head{ display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.lineup__shape{ font-size: var(--fs-xs); letter-spacing: .1em; color: var(--ink-3); }
+.lineup__subs{ border-top: 1px solid var(--line); padding-top: clamp(14px, 2vw, 20px); }
+.lineup__tools{
+  display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap;
+  border-top: 1px solid var(--line); padding-top: clamp(14px, 2vw, 20px);
+}
+.lineup__tools .stat__note{ margin-left: auto; }
+.lineup__formation{ display: grid; gap: 6px; }
+.lineup__formation .select{ min-width: 120px; }
+
+/* la cancha */
+.pitch{
+  position: relative; aspect-ratio: 3 / 4; margin-top: 12px;
+  border: 1px solid var(--line); border-radius: var(--r-lg);
+  background: var(--paper); overflow: hidden;
+}
+.pitch__lines{ position: absolute; inset: 0; pointer-events: none; color: var(--line); }
+.pitch__lines span{ position: absolute; border: 1px solid currentColor; }
+.pitch__box{ left: 26%; width: 48%; height: 13%; }
+.pitch__box--top{ top: -1px; border-top: 0; }
+.pitch__box--bottom{ bottom: -1px; border-bottom: 0; }
+.pitch__half{ left: 0; right: 0; top: 50%; height: 0; border-width: 1px 0 0; }
+.pitch__circle{
+  left: 50%; top: 50%; width: 26%; aspect-ratio: 1; transform: translate(-50%, -50%);
+  border-radius: 50%;
+}
+.pitch__slot{
+  position: absolute; transform: translate(-50%, -50%);
+  display: grid; justify-items: center; gap: 4px; width: 84px; text-align: center;
+}
+.pitch__num{
+  display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%;
+  background: var(--red); color: #fff;
+  font-family: var(--font-mono); font-size: var(--fs-xs); font-weight: 600;
+}
+.pitch__name, .bench__name{
+  font-size: var(--fs-xs); line-height: 1.2; color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.pitch__name.is-empty, .bench__name.is-empty{ color: var(--ink-3); }
+.pitch__num-input, .bench__num-input{
+  width: 32px; height: 30px; border-radius: 50%; text-align: center;
+  border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+  font-family: var(--font-mono); font-size: var(--fs-xs);
+}
+.pitch__name-input{
+  width: 84px; text-align: center; border: 1px solid var(--line); border-radius: var(--r-sm);
+  background: var(--paper); color: var(--ink); font-size: var(--fs-xs); padding: 3px 4px;
+}
+
+/* el banco */
+.bench__list{ list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 5px; }
+.bench__row{
+  display: flex; align-items: center; gap: 9px;
+  padding: 5px 9px; border-radius: var(--r-pill); background: var(--paper);
+  border: 1px solid var(--line);
+}
+.bench__num{
+  flex: none; display: grid; place-items: center; width: 24px; height: 24px;
+  border-radius: 50%; background: var(--red); color: #fff;
+  font-family: var(--font-mono); font-size: 11px;
+}
+.bench__name-input{
+  flex: 1; min-width: 0; border: 0; background: none; color: var(--ink);
+  font-size: var(--fs-xs); outline: none;
+}
+
+/* los cambios */
+.subs__list{ list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 7px; }
+.subs__row{
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  font-size: var(--fs-sm);
+}
+.subs__min{ flex: none; width: 44px; color: var(--ink-3); font-size: var(--fs-xs); }
+.subs__out{ color: var(--ink-3); }
+.subs__arrow{ display: inline-flex; color: var(--red); }
+.subs__arrow svg{ width: 15px; height: 15px; }
+.subs__in{ color: var(--ink); font-weight: 600; }
+.subs__edit{ display: grid; gap: 8px; margin-top: 10px; justify-items: start; }
+.subs__row--edit{ display: flex; gap: 8px; width: 100%; }
+.subs__row--edit input{
+  border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--paper);
+  color: var(--ink); font-size: var(--fs-sm); padding: 6px 10px; min-width: 0;
+}
+.subs__row--edit input:not(.subs__min-input){ flex: 1; }
+.subs__min-input{ width: 62px; flex: none; text-align: center; }
+
+/* notas de la camiseta */
+.kit-note__text{ font-size: var(--fs-sm); color: var(--ink); margin-top: 8px; }
+.kit-note__input{
+  width: 100%; margin-top: 8px; resize: vertical;
+  border: 1px solid var(--line); border-radius: var(--r-md); background: var(--paper);
+  color: var(--ink); font: inherit; font-size: var(--fs-sm); padding: 10px 12px;
+}
+
+@media (max-width: 1000px){
+  .lineup__grid{ grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .lineup__bench-col{ grid-column: 1 / -1; }
+  .bench__list{ grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+}
+@media (max-width: 680px){
+  .lineup__grid{ grid-template-columns: minmax(0, 1fr); }
+  .pitch__slot{ width: 66px; }
+  .pitch__name-input{ width: 66px; }
+  .lineup__tools .stat__note{ margin-left: 0; }
+}
+
+/* -- la camiseta, protagonista -- */
 .kit-hero{
   position: relative; border-radius: var(--r-lg); overflow: hidden;
   border: 1px solid var(--line); background: var(--paper-2);
