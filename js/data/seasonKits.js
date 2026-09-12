@@ -11,8 +11,8 @@
  *    edición especial o de arquero, y en qué orden va.
  * 2. LEGACY_YEARS: las fotos viejas sueltas de assets/camisetas/, registradas en
  *    JERSEYS (js/data/dressup.js). Sólo entran las de los años que el catálogo
- *    todavía no cubre, para no mostrar dos veces la misma camiseta. Siguen sin
- *    clasificar porque nadie confirmó qué son.
+ *    todavía no cubre, para no mostrar dos veces la misma camiseta. El tipo de
+ *    cada una está en LEGACY_TYPES, sacado de mirar la foto.
  *
  * PARA SUMAR UNA CAMISETA
  * 1. Dejá la foto en assets/camisetas/<año>/ con el nombre del tipo
@@ -32,7 +32,9 @@ export const KIT_TYPES = {
   titular: { label: 'Titular', role: 'jugador', rank: 1 },
   suplente: { label: 'Suplente', role: 'jugador', rank: 2 },
   alternativa: { label: 'Alternativa', role: 'jugador', rank: 3 },
-  especial: { label: 'Cuarta equipación', role: 'jugador', rank: 4 },
+  /* Cubre tanto una cuarta equipación como un homenaje suelto: el detalle de
+     qué es cada una va en NOTES, no en el nombre del tipo. */
+  especial: { label: 'Edición especial', role: 'jugador', rank: 4 },
   arquero: { label: 'Arquero', role: 'arquero', rank: 10 },
 };
 
@@ -119,6 +121,27 @@ const CATALOGUE = {
 const LEGACY_YEARS = new Set([2012, 2013, 2016, 2019]);
 
 /**
+ * Qué es cada una de las viejas. Salió de mirarlas: en Huracán la titular es
+ * blanca, la suplente roja y cualquier otro color es alternativa.
+ *
+ * '2013-v3' es la que queda con una duda: es blanca, o sea titular, pero la
+ * marca del pecho es el logo de Kappa y no Joma. Según las eras de indumentaria
+ * (js/data/brands.js) Kappa vistió al club hasta 2012 y Joma sólo en 2013, así
+ * que lo más probable es que sea la TITULAR 2012 mal archivada. No se la movió
+ * de año porque eso es una deducción, no algo que alguien haya confirmado.
+ */
+const LEGACY_TYPES = {
+  '2012': 'suplente',        // roja, Kappa, Banco Ciudad
+  '2012-v2': 'alternativa',  // negra, Kappa, Banco Ciudad
+  '2013': 'titular',         // blanca de cuello rojo, Joma, Banco Ciudad
+  '2013-v2': 'alternativa',  // azul, Joma, Banco Ciudad
+  '2013-v3': 'titular',      // blanca, Kappa — ver la nota de arriba
+  '2016': 'alternativa',     // verde, TBS, LN Seguros
+  '2019': 'titular',         // blanca de rayas finas, TBS, Banco Ciudad
+  '2019-ringo': 'especial',  // negra con la silueta de Ringo Bonavena, TBS
+};
+
+/**
  * Notas por camiseta: sponsor, parche, detalle de esa prenda.
  * Sólo lo que alguien haya confirmado — no se inventa.
  *
@@ -178,14 +201,18 @@ function variantOf(id) {
 function legacyKits() {
   return JERSEYS.map((jersey) => {
     const year = yearOf(jersey.id);
+    const kind = LEGACY_TYPES[jersey.id] || null;
+    const type = kind ? KIT_TYPES[kind] : null;
     return {
       id: jersey.id,
       year,
-      kind: null,
+      kind,
       slot: 1,
-      label: jersey.label,
-      role: null,
-      rank: 50,
+      // Clasificada usa el nombre del tipo; sin clasificar, la etiqueta vieja.
+      label: type ? type.label : jersey.label,
+      role: type ? type.role : null,
+      // Sin tipo va al final del año, que es donde no molesta.
+      rank: type ? type.rank : 50,
       variant: variantOf(jersey.id),
       note: NOTES[jersey.id] || null,
       src: jersey.src,
