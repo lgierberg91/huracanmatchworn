@@ -23,6 +23,7 @@ import {
   FORMATIONS,
   DEFAULT_FORMATION,
   slotsFor,
+  slotWidth,
   emptyLineup,
   readLineup,
   saveLineup,
@@ -36,6 +37,23 @@ const PLACEHOLDER = 'Nombre';
 let state = null; // { matchId, lineup, editing }
 
 /* ---------------- pintado ---------------- */
+
+/**
+ * En la cancha entra el apellido, no el nombre completo: "Hernán Galíndez" se
+ * pinta "Galíndez". Los puestos están a pocos píxeles unos de otros y un nombre
+ * entero se le monta encima al de al lado. El nombre completo queda en el
+ * `title`, para quien pase el mouse.
+ *
+ * Se saca el nombre de pila y se deja el resto, así los apellidos compuestos
+ * ("Fernández Cedrés") sobreviven enteros; sólo si aun así queda muy largo se
+ * recorta a la última palabra.
+ */
+function shortName(full) {
+  const parts = String(full || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length < 2) return parts[0] || '';
+  const rest = parts.slice(1).join(' ');
+  return rest.length > 18 ? parts[parts.length - 1] : rest;
+}
 
 function pitchHTML() {
   const { lineup, editing } = state;
@@ -55,7 +73,8 @@ function pitchHTML() {
       ${slots
         .map((slot, i) => {
           const player = lineup.starters[i] || { number: slot.number, name: '' };
-          return `<div class="pitch__slot" style="left:${slot.x}%;top:${slot.y}%">
+          const width = `calc(${slotWidth(slot.perLine).toFixed(2)}% - 6px)`;
+          return `<div class="pitch__slot" style="left:${slot.x}%;top:${slot.y}%;width:${width}">
               ${editing
                 ? `<input class="pitch__num-input" type="text" inputmode="numeric" maxlength="2"
                       value="${esc(player.number ?? '')}" data-role="starter-number" data-i="${i}"
@@ -64,7 +83,7 @@ function pitchHTML() {
                       value="${esc(player.name || '')}" data-role="starter-name" data-i="${i}"
                       aria-label="Nombre del puesto ${i + 1}">`
                 : `<span class="pitch__num">${esc(player.number ?? '')}</span>
-                   <span class="pitch__name${player.name ? '' : ' is-empty'}">${esc(player.name || PLACEHOLDER)}</span>`}
+                   <span class="pitch__name${player.name ? '' : ' is-empty'}"${player.name ? ` title="${esc(player.name)}"` : ''}>${esc(player.name ? shortName(player.name) : PLACEHOLDER)}</span>`}
             </div>`;
         })
         .join('')}

@@ -331,16 +331,30 @@ a.mini-vs__side:hover{ color: var(--red-bright); }
   left: 50%; top: 50%; width: 26%; aspect-ratio: 1; transform: translate(-50%, -50%);
   border-radius: 50%;
 }
+/*
+  Los puestos se pisan cuando el nombre crece. Van en una caja de ancho fijo y el
+  apellido se pinta sobre su propio fondo, en un renglón y recortado si no entra:
+  así dos apellidos largos que queden pegados se siguen leyendo como dos
+  etiquetas y no como una sola línea mezclada.
+*/
 .pitch__slot{
   position: absolute; transform: translate(-50%, -50%);
-  display: grid; justify-items: center; gap: 3px; width: 60px; text-align: center;
+  display: grid; justify-items: center; gap: 3px; text-align: center;
 }
 .pitch__num{
   display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
   background: var(--red); color: #fff;
   font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+  /* por encima de la etiqueta del puesto vecino si llegan a tocarse */
+  position: relative; z-index: 1;
 }
-.pitch__name, .bench__name{
+.pitch__name{
+  max-width: 100%; font-size: 11px; line-height: 1.15; color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  padding: 1px 5px; border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+}
+.bench__name{
   font-size: 11px; line-height: 1.15; color: var(--ink);
   overflow-wrap: anywhere;
 }
@@ -407,7 +421,6 @@ a.mini-vs__side:hover{ color: var(--red-bright); }
 }
 @media (max-width: 680px){
   .lineup__grid{ grid-template-columns: minmax(0, 1fr); }
-  .pitch__slot{ width: 66px; }
   .pitch__name-input{ width: 66px; }
   .lineup__tools .stat__note{ margin-left: 0; }
 }
