@@ -55,8 +55,46 @@ function shortName(full) {
   return rest.length > 18 ? parts[parts.length - 1] : rest;
 }
 
+/**
+ * Los once como lista, para los partidos de los que ESPN publica quiénes
+ * jugaron pero no el dibujo — de 2014 para atrás, casi todos. Antes que
+ * inventarles una posición, se los muestra en el orden en que vienen, que es
+ * del arquero al ataque.
+ */
+function elevenListHTML() {
+  const { lineup, editing } = state;
+
+  return `<div class="lineup__head">
+      <p class="panel__title">Titulares</p>
+      <span class="lineup__shape mono">sin esquema</span>
+    </div>
+    <ol class="bench__list bench__list--eleven">
+      ${lineup.starters
+        .map(
+          (player, i) => `<li class="bench__row">
+            ${editing
+              ? `<input class="bench__num-input" type="text" inputmode="numeric" maxlength="2"
+                    value="${esc(player.number ?? '')}" data-role="starter-number" data-i="${i}"
+                    aria-label="Número del titular ${i + 1}">
+                 <input class="bench__name-input" type="text" placeholder="${PLACEHOLDER}"
+                    value="${esc(player.name || '')}" data-role="starter-name" data-i="${i}"
+                    aria-label="Nombre del titular ${i + 1}">`
+              : `<span class="bench__num">${esc(player.number ?? '')}</span>
+                 <span class="bench__name${player.name ? '' : ' is-empty'}">${esc(player.name || PLACEHOLDER)}</span>`}
+          </li>`
+        )
+        .join('')}
+    </ol>
+    <p class="stat__note" style="margin-top:10px">
+      De este partido se sabe quiénes jugaron, pero no en qué esquema. Van en el
+      orden de la ficha, del arquero al ataque. Si sabés cómo formó, elegí el
+      dibujo al editar y se pinta la cancha.
+    </p>`;
+}
+
 function pitchHTML() {
   const { lineup, editing } = state;
+  if (!lineup.formation) return elevenListHTML();
   const slots = slotsFor(lineup.formation);
 
   return `<div class="lineup__head">
@@ -185,6 +223,7 @@ function toolsHTML() {
       <label class="lineup__formation">
         <span class="filter-group__label">Formación</span>
         <select class="select" data-role="formation">
+          ${lineup.formation ? '' : '<option value="" selected>Sin esquema</option>'}
           ${FORMATIONS.map(
             (f) => `<option value="${esc(f.id)}"${lineup.formation === f.id ? ' selected' : ''}>${esc(f.id)}</option>`
           ).join('')}
