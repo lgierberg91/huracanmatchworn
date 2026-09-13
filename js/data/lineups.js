@@ -7,22 +7,19 @@
  * colores", "parche del centenario", lo que sea). Sólo de Huracán: el equipo
  * rival no es lo que busca quien entra a ver una camiseta.
  *
- * DE DÓNDE SALE
- * 1. js/data/lineupsSeed.js: 641 partidos bajados de las fichas de ESPN, que
- *    vienen con el sitio y los ve cualquiera que entre.
- * 2. El navegador de cada uno (localStorage), para lo que se edita a mano. Eso
- *    NO se comparte: la base no tiene tabla de formaciones y crearla necesita
- *    correr SQL, que hoy no es una opción. Lo editado pisa a lo cargado.
- *    Para volverlo compartido hay que crear `match_lineups` y reemplazar
- *    readLineup/saveLineup por llamadas a la API, sin tocar la interfaz.
- *
- * PARTIDOS SIN ESQUEMA
- * De 2014 para atrás ESPN publica el once pero no el dibujo, así que esas
- * formaciones llegan con `formation` vacío. No se les inventa uno: la vista los
- * muestra como lista en vez de dibujarlos en la cancha.
+ * DÓNDE VIVE
+ * Hay tres capas, en este orden de prioridad:
+ *   1. Lo editado a mano en este navegador (localStorage) — siempre manda.
+ *   2. La tabla `match_lineups` de Supabase — formaciones reales, scrapeadas
+ *      de ESPN partido por partido (ver scripts/scrape_lineups.py). Se trae
+ *      con `loadRemoteLineup` y se cachea en memoria; no bloquea el primer
+ *      pintado, por eso el componente pinta con lo que haya y repinta si
+ *      llega algo mejor.
+ *   3. `SEEDED`, más abajo — lo que se cargó a mano antes de tener la tabla.
+ * Lo que no está en ninguna capa queda vacío: no se inventa.
  */
 
-import { SEED } from './lineupsSeed.js';
+import { fetchLineup } from './api.js';
 
 const KEY = 'hmw:lineups';
 
@@ -32,20 +29,16 @@ const KEY = 'hmw:lineups';
  * agregar una línea acá.
  */
 export const FORMATIONS = [
-  { id: '4-2-3-1', lines: [4, 2, 3, 1] },
   { id: '4-3-3', lines: [4, 3, 3] },
   { id: '4-4-2', lines: [4, 4, 2] },
+  { id: '4-2-3-1', lines: [4, 2, 3, 1] },
   { id: '4-3-1-2', lines: [4, 3, 1, 2] },
-  { id: '4-1-4-1', lines: [4, 1, 4, 1] },
-  { id: '4-1-3-2', lines: [4, 1, 3, 2] },
-  { id: '4-4-1-1', lines: [4, 4, 1, 1] },
   { id: '3-5-2', lines: [3, 5, 2] },
   { id: '5-3-2', lines: [5, 3, 2] },
   { id: '3-4-3', lines: [3, 4, 3] },
 ];
 
-/* El 4-2-3-1 es, por lejos, el dibujo más repetido del archivo. */
-export const DEFAULT_FORMATION = '4-2-3-1';
+export const DEFAULT_FORMATION = '4-3-3';
 
 /**
  * Números de camiseta por defecto, a la argentina y leídos de izquierda a
@@ -56,9 +49,6 @@ const DEFAULT_NUMBERS = {
   '4-4-2': [3, 6, 2, 4, 11, 8, 5, 7, 10, 9],
   '4-2-3-1': [3, 6, 2, 4, 5, 8, 11, 10, 7, 9],
   '4-3-1-2': [3, 6, 2, 4, 5, 8, 7, 10, 11, 9],
-  '4-1-4-1': [3, 6, 2, 4, 5, 11, 8, 10, 7, 9],
-  '4-1-3-2': [3, 6, 2, 4, 5, 11, 8, 7, 10, 9],
-  '4-4-1-1': [3, 6, 2, 4, 11, 8, 5, 7, 10, 9],
   '3-5-2': [6, 2, 4, 11, 8, 5, 7, 3, 10, 9],
   '5-3-2': [3, 6, 2, 4, 5, 10, 8, 7, 11, 9],
   '3-4-3': [6, 2, 4, 3, 8, 5, 7, 11, 9, 10],
@@ -75,37 +65,19 @@ export function slotsFor(formationId) {
   const numbers = DEFAULT_NUMBERS[formation.id] || [];
   const lines = formation.lines;
 
-  /*
-    `perLine` es cuántos comparten esa franja. Lo necesita la vista para darle a
-    cada puesto el ancho que le toca: con cuatro en el fondo hay lugar para la
-    cuarta parte del ancho y ni un píxel más, o los apellidos se pisan.
-    El arquero está solo, pero se lo trata como si fueran tres para que su
-    etiqueta no se estire de punta a punta.
-  */
-  const slots = [{ x: 50, y: 92, number: 1, perLine: 3 }];
+  const slots = [{ x: 50, y: 92, number: 1 }];
 
   lines.forEach((count, lineIndex) => {
     const y = lines.length === 1 ? 45 : 74 - (lineIndex * 58) / (lines.length - 1);
     for (let i = 0; i < count; i++) {
-      const x = BORDE + (i + 0.5) * (ANCHO_UTIL / count);
+      const x = 14 + (i + 0.5) * (72 / count);
       const at = slots.length - 1;
-      slots.push({ x, y, number: numbers[at] != null ? numbers[at] : at + 2, perLine: count });
+      slots.push({ x, y, number: numbers[at] != null ? numbers[at] : at + 2 });
     }
   });
 
   return slots;
 }
-
-/*
-  Cuánto de la cancha se reparten los puestos. Se usa casi todo el ancho a
-  propósito: lo que sobra a los costados es ancho que le falta a cada apellido, y
-  con cuatro en el fondo la diferencia es entre leer "Blondel" y leer "Blo…".
-*/
-const BORDE = 8;
-const ANCHO_UTIL = 84;
-
-/** Ancho de un puesto, en porcentaje del ancho de la cancha. */
-export const slotWidth = (perLine) => ANCHO_UTIL / Math.max(perLine || 1, 1);
 
 /** Cuántos van al banco. 12 a 23, como la planilla. */
 export const BENCH_SIZE = 12;
@@ -124,49 +96,119 @@ export function emptyLineup(formationId = DEFAULT_FORMATION) {
 
 /* ---------------- lo que viene cargado con el sitio ---------------- */
 
+/** Atajo para escribir un once sin repetir la misma estructura once veces. */
+function eleven(formation, starters, extra = {}) {
+  return {
+    formation,
+    starters: starters.map(([number, name]) => ({ number: String(number), name })),
+    bench: (extra.bench || []).map(([number, name]) => ({ number: String(number), name })),
+    subs: extra.subs || [],
+    kitNote: extra.kitNote || '',
+  };
+}
+
 /**
- * Las formaciones que vienen con el sitio viven en js/data/lineupsSeed.js, en
- * formato compacto. Acá se desarma cada una la primera vez que se pide y se
- * guarda, para no recorrer 641 partidos al arrancar.
+ * Formaciones confirmadas, de las fichas de ESPN/Canchallena fecha por fecha.
+ *
+ * DOS ACLARACIONES SOBRE LA EXACTITUD
+ * 1. El dibujo sólo está confirmado donde la fuente lo dice (River 4-4-2 y
+ *    Belgrano de septiembre 4-2-3-1). En el resto se dedujo del orden en que la
+ *    ficha lista a los once, que es el orden habitual arquero → fondo → ataque.
+ *    Puede estar mal sin que estén mal los nombres.
+ * 2. El banco lista sólo a los que efectivamente entraron y están confirmados;
+ *    los cambios sin minuto son los que la crónica no precisó. Lo que no se
+ *    pudo confirmar no se inventa: queda vacío.
+ *
+ * Los dorsales cambian de un partido a otro porque así figuran en las fichas.
  */
-function persona(texto) {
-  const corte = texto.indexOf(' ');
-  // El dorsal va antes del primer espacio; si falta, la entrada arranca con él.
-  return corte < 0
-    ? { number: '', name: texto }
-    : { number: texto.slice(0, corte), name: texto.slice(corte + 1) };
-}
+const SEEDED = {
+  /* --- 2025 --- */
+  '2025-10-05-banfield': eleven('4-3-3', [
+    [1, 'Hernán Galíndez'],
+    [25, 'César Ibáñez'], [30, 'Nehuén Paz'], [6, 'Fabio Pereyra'], [24, 'Tomás Guidara'],
+    [8, 'Leonardo Gil'], [20, 'Emmanuel Ojeda'], [16, 'Rodrigo Cabral'],
+    [10, 'Matko Miljevic'], [21, 'Juan Bisanz'], [23, 'Luciano Giménez'],
+  ]),
 
-const gente = (linea) => (linea ? linea.split('|').map(persona) : []);
+  /* --- 2026 --- */
+  '2026-01-23-banfield': eleven('4-3-3', [
+    [1, 'Hernán Galíndez'],
+    [4, 'Federico Vera'], [6, 'Fabio Pereyra'], [30, 'Nehuén Paz'], [19, 'Leandro Lescano'],
+    [20, 'Emmanuel Ojeda'], [15, 'Facundo Waller'], [11, 'Thaiel Peralta'],
+    [8, 'Leonardo Gil'], [7, 'Óscar Cortés'], [9, 'Jordy Caicedo'],
+  ]),
 
-function cambio(texto) {
-  const corte = texto.indexOf(' ');
-  const minute = corte < 0 ? '' : texto.slice(0, corte);
-  const resto = corte < 0 ? texto : texto.slice(corte + 1);
-  const flecha = resto.indexOf('>');
-  return flecha < 0
-    ? { minute, out: resto, in: '' }
-    : { minute, out: resto.slice(0, flecha), in: resto.slice(flecha + 1) };
-}
+  '2026-03-03-belgrano-de-cordoba': eleven('4-3-3', [
+    [1, 'Hernán Galíndez'],
+    [25, 'César Ibáñez'], [3, 'Lucas Carrizo'], [6, 'Fabio Pereyra'], [34, 'Ignacio Campo'],
+    [8, 'Leonardo Gil'], [20, 'Emmanuel Ojeda'], [7, 'Óscar Cortés'],
+    [10, 'Óscar Romero'], [23, 'Thaiel Peralta'], [9, 'Jordy Caicedo'],
+  ]),
 
-const cache = new Map();
+  '2026-03-13-river-plate': eleven('4-4-2', [
+    [1, 'Hernán Galíndez'],
+    [25, 'César Ibáñez'], [3, 'Lucas Carrizo'], [6, 'Fabio Pereyra'], [34, 'Ignacio Campo'],
+    [14, 'Alejandro Martínez'], [8, 'Leonardo Gil'], [20, 'Emmanuel Ojeda'], [23, 'Thaiel Peralta'],
+    [9, 'Jordy Caicedo'], [10, 'Óscar Romero'],
+  ]),
 
-/** La formación cargada para un partido, ya desarmada, o null. */
-function seedFor(matchId) {
-  if (cache.has(matchId)) return cache.get(matchId);
-  const fila = SEED[matchId];
-  const valor = fila
-    ? {
-        formation: fila[0] || '',
-        starters: gente(fila[1]),
-        bench: gente(fila[2]),
-        subs: fila[3] ? fila[3].split('|').map(cambio) : [],
-        kitNote: '',
-      }
-    : null;
-  cache.set(matchId, valor);
-  return valor;
-}
+  '2026-05-10-boca-juniors': eleven(
+    '4-3-3',
+    [
+      [1, 'Hernán Galíndez'],
+      [34, 'Ignacio Campo'], [6, 'Fabio Pereyra'], [3, 'Lucas Carrizo'], [19, 'Leandro Lescano'],
+      [15, 'Facundo Waller'], [8, 'Leonardo Gil'], [2, 'Lucas Blondel'],
+      [24, 'Facundo Kalinger'], [7, 'Óscar Cortés'], [9, 'Jordy Caicedo'],
+    ],
+    {
+      bench: [[10, 'Óscar Romero'], ['', 'Eric Ramírez']],
+      subs: [
+        { minute: '', out: '', in: 'Óscar Romero' },
+        { minute: '', out: '', in: 'Eric Ramírez' },
+      ],
+    }
+  ),
+
+  '2026-07-25-banfield': eleven(
+    '4-3-3',
+    [
+      [1, 'Hernán Galíndez'],
+      [2, 'Lucas Blondel'], [6, 'Fabio Pereyra'], [35, 'Máximo Palazzo'], [25, 'César Ibáñez'],
+      [8, 'Leonardo Gil'], [15, 'Facundo Waller'], [11, 'Thaiel Peralta'],
+      [10, 'Óscar Romero'], [7, 'Óscar Cortés'], [9, 'Jordy Caicedo'],
+    ],
+    {
+      bench: [[24, 'Facundo Kalinger']],
+      subs: [{ minute: '', out: 'Facundo Waller', in: 'Facundo Kalinger' }],
+    }
+  ),
+
+  '2026-08-30-estudiantes-de-rio-cuarto': eleven('4-3-3', [
+    [1, 'Hernán Galíndez'],
+    [2, 'Lucas Blondel'], [6, 'Fabio Pereyra'], [35, 'Máximo Palazzo'], [25, 'César Ibáñez'],
+    [8, 'Leonardo Gil'], [15, 'Facundo Waller'], [11, 'Thaiel Peralta'],
+    [10, 'Óscar Romero'], [7, 'Óscar Cortés'], [23, 'Ignacio Pussetto'],
+  ]),
+
+  '2026-09-05-belgrano-de-cordoba': eleven(
+    '4-2-3-1',
+    [
+      [1, 'Hernán Galíndez'],
+      [25, 'César Ibáñez'], [35, 'Máximo Palazzo'], [21, 'Hugo Nervo'], [2, 'Lucas Blondel'],
+      [15, 'Facundo Waller'], [5, 'Rodrigo Fernández Cedrés'],
+      [7, 'Óscar Cortés'], [8, 'Leonardo Gil'], [24, 'Facundo Kalinger'],
+      [9, 'Jordy Caicedo'],
+    ],
+    {
+      bench: [[19, 'Leandro Lescano'], [11, 'Thaiel Peralta'], [33, 'Bruno Barticciotto']],
+      subs: [
+        { minute: '', out: 'César Ibáñez', in: 'Leandro Lescano' },
+        { minute: '', out: 'Óscar Cortés', in: 'Thaiel Peralta' },
+        { minute: '67', out: 'Leonardo Gil', in: 'Bruno Barticciotto' },
+      ],
+    }
+  ),
+};
 
 function readAll() {
   try {
@@ -176,21 +218,64 @@ function readAll() {
   }
 }
 
+/* ---------------- Supabase (match_lineups) ---------------- */
+
+/** Fila de `match_lineups` al formato interno de starters/bench/subs de arriba. */
+function fromRow(row) {
+  return {
+    formation: row.formation || DEFAULT_FORMATION,
+    starters: (row.starters || []).map((p) => ({
+      number: p.number != null ? String(p.number) : '',
+      name: p.name || '',
+    })),
+    bench: (row.bench || []).map((p) => ({
+      number: p.number != null ? String(p.number) : '',
+      name: p.name || '',
+    })),
+    subs: (row.subs || []).map((s) => ({
+      minute: s.minute != null ? String(s.minute) : '',
+      out: s.out_name || '',
+      in: s.in_name || '',
+    })),
+    kitNote: row.kit_note || '',
+  };
+}
+
+const remoteCache = {}; // matchId -> lineup convertida | null (ya se pidió y no hay fila)
+const remoteLoading = new Set();
+
+/**
+ * Pide a Supabase la formación real del partido y la deja en caché para que
+ * readLineup/isSeeded la usen. No pisa lo editado a mano ni bloquea el primer
+ * pintado: el componente la llama después de pintar y repinta si trae algo
+ * nuevo. Devuelve true si encontró una fila (y por lo tanto vale repintar).
+ */
+export async function loadRemoteLineup(matchId) {
+  if (matchId in remoteCache || remoteLoading.has(matchId)) return false;
+  remoteLoading.add(matchId);
+  try {
+    const row = await fetchLineup(matchId);
+    remoteCache[matchId] = row ? fromRow(row) : null;
+  } catch {
+    remoteCache[matchId] = null; // sin conexión o error: se sigue con SEEDED/local
+  } finally {
+    remoteLoading.delete(matchId);
+  }
+  return Boolean(remoteCache[matchId]);
+}
+
 /**
  * Lo cargado para un partido, o null si nadie lo completó.
- * Lo editado a mano manda sobre lo que viene con el sitio.
- *
- * `formation` puede volver vacío: es un partido del que sabemos el once pero no
- * el dibujo. Quien lo muestre tiene que contemplarlo.
+ * Orden: lo editado a mano > la fila real de Supabase (si ya se pidió) >
+ * SEEDED (lo cargado a mano antes de tener la tabla).
  */
 export function readLineup(matchId) {
-  const stored = readAll()[matchId] || seedFor(matchId);
+  const stored = readAll()[matchId] || remoteCache[matchId] || SEEDED[matchId];
   if (!stored) return null;
   const base = emptyLineup(stored.formation || DEFAULT_FORMATION);
   return {
     ...base,
     ...stored,
-    formation: stored.formation || '',
     starters: (stored.starters && stored.starters.length ? stored.starters : base.starters).slice(0, base.starters.length),
     bench: stored.bench && stored.bench.length ? stored.bench : base.bench,
     subs: stored.subs || [],
@@ -198,8 +283,9 @@ export function readLineup(matchId) {
   };
 }
 
-/** Si viene con el sitio y nadie lo editó todavía. */
-export const isSeeded = (matchId) => Boolean(SEED[matchId] && !readAll()[matchId]);
+/** Si viene del archivo (Supabase o SEEDED) y nadie lo editó todavía. */
+export const isSeeded = (matchId) =>
+  Boolean((remoteCache[matchId] || SEEDED[matchId]) && !readAll()[matchId]);
 
 export function saveLineup(matchId, lineup) {
   const all = readAll();

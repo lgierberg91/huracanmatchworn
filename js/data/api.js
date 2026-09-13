@@ -59,6 +59,32 @@ export async function fetchKits(matchId) {
   return response.json();
 }
 
+/** Formación real cargada para el partido (tabla match_lineups), o null si no hay fila. */
+export async function fetchLineup(matchId) {
+  const url =
+    `${SUPABASE_URL}/rest/v1/match_lineups?match_id=eq.${encodeURIComponent(matchId)}` +
+    '&select=*';
+  const response = await fetch(url, { headers: headers() });
+  if (!response.ok) throw await readError(response);
+  const rows = await response.json();
+  return rows[0] || null;
+}
+
+/** Crea o actualiza la formación de un partido (requiere sesión de historiador). */
+export async function upsertLineup(matchId, fields) {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/match_lineups?on_conflict=match_id`, {
+    method: 'POST',
+    headers: authHeaders({
+      'Content-Type': 'application/json',
+      Prefer: 'resolution=merge-duplicates,return=representation',
+    }),
+    body: JSON.stringify({ match_id: matchId, ...fields }),
+  });
+  if (!response.ok) throw await readError(response);
+  const rows = await response.json();
+  return rows[0];
+}
+
 export const photoUrl = (storagePath) =>
   `${SUPABASE_URL}/storage/v1/object/public/${PHOTO_BUCKET}/${storagePath}`;
 
