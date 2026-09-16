@@ -30,7 +30,7 @@ export function renderKitCreator() {
           ${dressUpHTML()}
         </div>
         <p class="lede creator-layout__text">
-          Elegí un ídolo y probale las camisetas del archivo. Cada combinación es
+          Elegí un histórico jugador de Huracán y probale las camisetas del archivo. Cada combinación es
           una imagen generada aparte: acá sólo se revela la que pediste.
         </p>
       </div>

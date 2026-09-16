@@ -185,8 +185,8 @@ function arrowHTML(step, dir, label) {
 export function dressUpCompactHTML() {
   return `<div class="dressup dressup--compact" id="dressup-mini">
       ${stageHTML('dressup-mini')}
-      ${arrowHTML('player', -1, 'Ídolo anterior')}
-      ${arrowHTML('player', 1, 'Ídolo siguiente')}
+      ${arrowHTML('player', -1, 'Jugador anterior')}
+      ${arrowHTML('player', 1, 'Jugador siguiente')}
       ${arrowHTML('season', -1, 'Camiseta anterior')}
       ${arrowHTML('season', 1, 'Camiseta siguiente')}
     </div>`;
