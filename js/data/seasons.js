@@ -12,8 +12,9 @@
  *   99-00, Signia 02-03, Meister 03-04 y 04-05, Kappa 05-06 y 06-07).
  * - Antes y después, una camiseta por año calendario. Vitto confirmó que 2008,
  *   2009 y 2017 a 2020 eran de un año.
- * - Quedan dos filas de medio año, que son las costuras: '1985' (enero a junio)
- *   y '2007' (julio a diciembre, el Apertura del ascenso).
+ * - Queda una fila de medio año, que es la costura: '1985' (enero a junio).
+ * - Julio a diciembre de 2007 (el Apertura del ascenso) no tiene fila propia:
+ *   va con 2008, que es la temporada de Primera que ese torneo abrió.
  *
  * El resto del sitio (estadísticas, #/temporada/<año>) sigue por año calendario:
  * esto sólo ordena las camisetas.
@@ -33,6 +34,7 @@ export function seasonOfDate(date) {
   const month = Number(String(date).slice(5, 7)) || 1;
   const start = month >= 7 ? year : year - 1;
   if (start >= SPLIT_FROM && start <= SPLIT_TO) return splitKey(start);
+  if (start === 2007) return '2008';
   return String(year);
 }
 
