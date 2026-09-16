@@ -46,6 +46,9 @@ export function brandFromKit(text) {
  * Es el dato que ya traía la primera versión del sitio (variable BRAND_RANGES).
  * Sirve para la línea de tiempo: aunque no haya foto de la camiseta de un año,
  * sí sabemos quién la fabricaba.
+ *
+ * Los años son de ARRANQUE de temporada: Signia 2002 es la 2002-03, Meister
+ * 2003-2004 son la 03-04 y la 04-05, Kappa desde la 05-06.
  */
 export const BRAND_ERAS = [
   { from: 2023, to: 9999, name: 'Kappa' },
@@ -66,17 +69,21 @@ export function brandForYear(year) {
   return era ? era.name : null;
 }
 
+/** Marca de una temporada ('2004-05', '2013'). */
+export const brandForSeason = (season) => brandForYear(Number(String(season).slice(0, 4)));
+
 /**
  * Sponsor principal del pecho, temporada por temporada.
  *
- * Cada uno salió de mirar la foto de una camiseta de ese año, no de buscarlo por
- * ahí. Los años que no están es porque no hay foto que lo confirme: 2021 sólo
- * tiene la de arquero, que va sin sponsor.
+ * Cada uno salió de mirar la foto de una camiseta de esa temporada, no de
+ * buscarlo por ahí. Las que no están es porque no hay foto que lo confirme: 2021
+ * sólo tiene la de arquero, que va sin sponsor.
  *
- * PARA SUMAR UNO: miralo en la foto de la camiseta de ese año y agregá la línea.
- * Sólo lo que se ve; si la foto no lo muestra, el año no va.
+ * PARA SUMAR UNO: miralo en la foto de la camiseta y agregá la línea, con la
+ * temporada escrita igual que en el catálogo ('2004-05', '2013').
+ * Sólo lo que se ve; si la foto no lo muestra, la temporada no va.
  */
-export const SPONSOR_BY_YEAR = {
+export const SPONSOR_BY_SEASON = {
   2026: 'Mr.Bet',
   2025: 'Jeluz',
   2024: 'Decrypto',
@@ -91,7 +98,16 @@ export const SPONSOR_BY_YEAR = {
   2014: 'LN Seguros',
   2013: 'Banco Ciudad',
   2012: 'Banco Ciudad',
+  2009: 'Motomel',
+  2008: 'La Nueva Seguros',
+  '2006-07': 'La Nueva Seguros',
+  '2005-06': 'Tarjeta Plata',
+  '2004-05': 'Tarjeta Plata',
+  '2003-04': 'Tarjeta Plata',
+  '2002-03': 'Farmacias TKL',
+  '2000-01': 'Fox Sports',
+  '1999-00': 'Amanco',
 };
 
-/** Sponsor del pecho en ese año, o null si nadie lo confirmó. */
-export const sponsorForYear = (year) => SPONSOR_BY_YEAR[Number(year)] || null;
+/** Sponsor del pecho en esa temporada, o null si nadie lo confirmó. */
+export const sponsorForSeason = (season) => SPONSOR_BY_SEASON[String(season)] || null;

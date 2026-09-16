@@ -55,11 +55,11 @@ function seasonGridHTML(step) {
   // del mazo del juego — más las correctas, que nunca pueden faltar de la grilla.
   const years = [
     ...new Set([
-      ...SEASON_KITS.map((k) => String(k.year)),
+      ...SEASON_KITS.map((k) => k.season),
       ...QUIZ_KITS.map((k) => String(k.year)),
       ...step.targets.map(String),
     ]),
-  ].sort((a, b) => Number(a) - Number(b));
+  ].sort((a, b) => a.localeCompare(b));
   return `<div class="quiz-seasons">
       ${years.map((y) => `<button type="button" class="quiz-season" data-season="${esc(y)}">${esc(y)}</button>`).join('')}
     </div>`;

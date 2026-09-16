@@ -20,8 +20,9 @@ import { fetchPhotos, fetchKits, photoUrl } from '../data/api.js';
 import { isMember } from '../data/auth.js';
 import { HURACAN, clubShort } from '../data/clubs.js';
 import { isFavorite, toggleFavorite } from '../lib/storage.js';
-import { kitsForYear } from '../data/seasonKits.js';
-import { brandForYear, sponsorForYear } from '../data/brands.js';
+import { kitsForMatch } from '../data/seasonKits.js';
+import { seasonOfDate } from '../data/seasons.js';
+import { brandForSeason, sponsorForSeason } from '../data/brands.js';
 
 /* ---------------- utilidades ---------------- */
 
@@ -49,8 +50,8 @@ function videoDelPartido(match) {
  * La camiseta de esa temporada, para usar de referencia mientras no se cargó
  * la foto de ESTE partido puntual (se carga a mano, de a un partido por vez).
  */
-function seasonKitFor(year, role = 'player') {
-  const kits = kitsForYear(year);
+function seasonKitFor(match, role = 'player') {
+  const kits = kitsForMatch(match);
   if (role === 'goalkeeper') return kits.find((k) => k.role === 'arquero') || null;
   return kits.find((k) => k.kind === 'titular') || kits.find((k) => k.role === 'jugador') || null;
 }
@@ -127,8 +128,8 @@ function kitPairHTML(kit, fallbackPhotoUrl, seasonKit) {
   }
   if (seasonKit) {
     return `<div class="kit-hero__ref">
-        <img src="${esc(seasonKit.src)}" alt="Camiseta de Huracán en ${esc(seasonKit.year)}, de referencia">
-        <span class="kit-hero__ref-tag mono">Referencia de la temporada ${esc(seasonKit.year)}</span>
+        <img src="${esc(seasonKit.src)}" alt="Camiseta de Huracán en ${esc(seasonKit.season)}, de referencia">
+        <span class="kit-hero__ref-tag mono">Referencia de la temporada ${esc(seasonKit.season)}</span>
       </div>`;
   }
   return jerseyHTML({ size: 220, label: 'Camiseta sin identificar' });
@@ -140,7 +141,7 @@ function kitCaptionHTML(description, sub, seasonKit) {
        ${sub ? `<p class="kit-sub">${esc(sub)}</p>` : ''}`;
   }
   if (seasonKit) {
-    return `<h1 class="kit-title">${esc(seasonKit.label)} ${esc(seasonKit.year)}</h1>
+    return `<h1 class="kit-title">${esc(seasonKit.label)} ${esc(seasonKit.season)}</h1>
        <p class="kit-sub">Todavía no se cargó la foto de este partido puntual: se muestra la camiseta de esa temporada a modo de referencia.</p>`;
   }
   return `<h1 class="kit-title kit-title--muted">Camiseta sin identificar</h1>
@@ -169,7 +170,7 @@ function kitTilesHTML(kit) {
 }
 
 /** Marca, parche y publicidades de la camiseta activa (jugador o arquero). */
-function kitMetaHTML(kit, seasonKit, year) {
+function kitMetaHTML(kit, seasonKit, season) {
   if (kit) {
     const chips = [
       kit.brand && `<span class="chip chip--static">Marca: ${esc(kit.brand)}</span>`,
@@ -180,8 +181,8 @@ function kitMetaHTML(kit, seasonKit, year) {
   }
   if (seasonKit) {
     const chips = [
-      brandForYear(year) && `<span class="chip chip--static">Marca: ${esc(brandForYear(year))}</span>`,
-      sponsorForYear(year) && `<span class="chip chip--static">Sponsor: ${esc(sponsorForYear(year))}</span>`,
+      brandForSeason(season) && `<span class="chip chip--static">Marca: ${esc(brandForSeason(season))}</span>`,
+      sponsorForSeason(season) && `<span class="chip chip--static">Sponsor: ${esc(sponsorForSeason(season))}</span>`,
       seasonKit.note && `<span class="chip chip--static">${esc(seasonKit.note)}</span>`,
     ].filter(Boolean);
     return chips.length ? `<div class="chip-row">${chips.join('')}</div>` : '';
@@ -195,7 +196,7 @@ function kitStageHTML(match) {
   const video = videoDelPartido(match);
   const placeholderStage = hasPhoto
     ? `<img src="${esc(photoUrl(match.kitPhoto))}" alt="Camiseta usada ante ${esc(match.club.name)}">`
-    : kitPairHTML(null, null, seasonKitFor(match.year));
+    : kitPairHTML(null, null, seasonKitFor(match));
 
   const videoBadge = video
     ? `<a class="kit-hero__video" href="${esc(video.url)}" target="_blank" rel="noopener"
@@ -232,10 +233,10 @@ function videoHTML(video) {
 
 /** Título, datos (marca/parche/publicidades) y formularios de aporte, en el ancho angosto habitual. */
 function kitInfoHTML(match) {
-  const seasonKit = match.kitDescription ? null : seasonKitFor(match.year);
+  const seasonKit = match.kitDescription ? null : seasonKitFor(match);
   return `<div class="kit-caption">
       <div id="kit-caption">${kitCaptionHTML(match.kitDescription, match.patch_note, seasonKit)}</div>
-      <div id="kit-meta">${kitMetaHTML(null, seasonKit, match.year)}</div>
+      <div id="kit-meta">${kitMetaHTML(null, seasonKit, seasonOfDate(match.date))}</div>
     </div>
     <div style="margin-top:18px">${kitEditorHTML()}</div>
     <div style="margin-top:18px">${contributeHTML(match)}</div>`;
@@ -398,12 +399,12 @@ export function mountPartido(ctx, rerender) {
     if (!kitStage) return;
     const kit = currentByRole.get(activeRole);
     const fallback = !kit && !match.kitPhoto && fanPhotos.length ? photoUrl(fanPhotos[0].storage_path) : null;
-    const seasonKit = !kit && !match.kitPhoto && !fallback ? seasonKitFor(match.year, activeRole) : null;
+    const seasonKit = !kit && !match.kitPhoto && !fallback ? seasonKitFor(match, activeRole) : null;
     kitStage.innerHTML = kitPairHTML(kit, fallback, seasonKit);
     if (kitCaption) {
       kitCaption.innerHTML = kitCaptionHTML((kit && kit.description) || match.kitDescription, match.patch_note, seasonKit);
     }
-    if (kitMeta) kitMeta.innerHTML = kitMetaHTML(kit, seasonKit, match.year);
+    if (kitMeta) kitMeta.innerHTML = kitMetaHTML(kit, seasonKit, seasonOfDate(match.date));
     if (kitTiles) kitTiles.innerHTML = kitTilesHTML(kit);
     if (kitRoleBtn) {
       const isPlayer = activeRole === 'player';

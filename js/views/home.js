@@ -9,7 +9,8 @@ import { dateLong, plural, yearsAgo, decadeLabel } from '../lib/format.js';
 import {
   globalStats, featured, onThisDay, latestPlayed, facetCounts,
 } from '../data/store.js';
-import { kitCount, kitsForYear, yearsWithKits } from '../data/seasonKits.js';
+import { kitCount, kitsForSeason, seasonsWithKits } from '../data/seasonKits.js';
+import { seasonStart } from '../data/seasons.js';
 import { crestHTML } from '../components/crest.js';
 import { HURACAN } from '../data/clubs.js';
 import { dressUpCompactHTML, mountDressUpCompact } from '../components/dressup.js';
@@ -18,9 +19,9 @@ import { sectionHead, statHTML } from '../components/ui.js';
 
 /** La camiseta más representativa de la década, para la card del carrusel. */
 function decadeKit(decade) {
-  const year = yearsWithKits().find((y) => Math.floor(y / 10) * 10 === decade);
-  if (!year) return null;
-  const kits = kitsForYear(year);
+  const season = seasonsWithKits().find((s) => Math.floor(seasonStart(s) / 10) * 10 === decade);
+  if (!season) return null;
+  const kits = kitsForSeason(season);
   return kits.find((k) => k.kind === 'titular') || kits[0] || null;
 }
 

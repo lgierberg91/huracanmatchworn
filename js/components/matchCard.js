@@ -13,14 +13,14 @@ import { jerseyHTML, jerseyIcon } from './jersey.js';
 import { accentVars } from '../data/model.js';
 import { photoUrl } from '../data/api.js';
 import { clubShort } from '../data/clubs.js';
-import { kitsForYear } from '../data/seasonKits.js';
+import { kitsForMatch } from '../data/seasonKits.js';
 import { competitionLogo } from '../data/competitions.js';
 
 export const matchHref = (match) => `#/partido/${encodeURIComponent(match.id)}`;
 
 /** La camiseta de esa temporada, mientras no haya foto propia del partido. */
 function seasonKitFallback(match) {
-  const kits = kitsForYear(match.year);
+  const kits = kitsForMatch(match);
   return kits.find((k) => k.kind === 'titular') || kits.find((k) => k.role === 'jugador') || null;
 }
 
@@ -32,8 +32,8 @@ function stageHTML(match) {
   const seasonKit = seasonKitFallback(match);
   if (seasonKit) {
     return `<img class="match-card__photo match-card__photo--ref" src="${esc(seasonKit.src)}"
-        alt="Camiseta de Huracán en ${match.year}" loading="lazy" decoding="async">
-      <span class="ref-badge mono">De ${match.year}</span>`;
+        alt="Camiseta de Huracán en ${seasonKit.season}" loading="lazy" decoding="async">
+      <span class="ref-badge mono">De ${seasonKit.season}</span>`;
   }
   return crestHTML(match.club, 'xl');
 }

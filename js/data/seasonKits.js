@@ -1,13 +1,13 @@
 /**
  * Camisetas por temporada: el catálogo del archivo.
  *
- * Es el nivel intermedio del proyecto: por año sabemos qué prendas existieron
+ * Es el nivel intermedio del proyecto: por temporada sabemos qué prendas existieron
  * (de jugador y de arquero); el dato fino — qué camiseta se usó en CADA partido —
  * se carga a mano desde la ficha del partido y vive en la tabla `match_kits`.
  *
  * DE DÓNDE SALEN
  * 1. CATALOGUE, acá abajo: las fotos clasificadas que viven en
- *    assets/camisetas/<año>/. Cada una sabe si es titular, suplente, alternativa,
+ *    assets/camisetas/<temporada>/. Cada una sabe si es titular, suplente, alternativa,
  *    edición especial o de arquero, y en qué orden va.
  * 2. LEGACY_YEARS: las fotos viejas sueltas de assets/camisetas/, registradas en
  *    JERSEYS (js/data/dressup.js). Sólo entran las de los años que el catálogo
@@ -15,14 +15,17 @@
  *    cada una está en LEGACY_TYPES, sacado de mirar la foto.
  *
  * PARA SUMAR UNA CAMISETA
- * 1. Dejá la foto en assets/camisetas/<año>/ con el nombre del tipo
+ * 1. Dejá la foto en assets/camisetas/<temporada>/ con el nombre del tipo
  *    (titular.jpg, suplente.jpg, alternativa.jpg, especial.jpg, arquero-1.jpg…)
- * 2. Agregá la línea al año que corresponda en CATALOGUE.
+ * 2. Agregá la línea a la temporada que corresponda en CATALOGUE. La clave es
+ *    la temporada como la dicen los coleccionistas: '2002-03' hasta 2006-07,
+ *    '2013' de ahí en adelante (ver js/data/seasons.js).
  * 3. Si ese año estaba en LEGACY_YEARS, sacalo de ahí.
  */
 
 import { JERSEY_DIR } from '../config.js';
 import { JERSEYS } from './dressup.js';
+import { seasonOfDate, seasonStart, bySeasonDesc } from './seasons.js';
 
 /**
  * Los tipos de camiseta, en el orden en que se muestran dentro de un año.
@@ -48,7 +51,7 @@ export const TYPE_OPTIONS = [
 ];
 
 /**
- * El catálogo clasificado. Dentro de cada año el orden de acá no importa:
+ * El catálogo clasificado. Dentro de cada temporada el orden de acá no importa:
  * se reordena solo por KIT_TYPES.rank y, entre arqueros, por `slot`.
  */
 const CATALOGUE = {
@@ -112,13 +115,49 @@ const CATALOGUE = {
   2014: [
     { kind: 'suplente', file: '2014/suplente.png' },
   ],
+  2013: [
+    { kind: 'titular', file: '2013/titular.jpg' },
+    { kind: 'suplente', file: '2013/suplente.jpg' },
+    { kind: 'alternativa', file: '2013/alternativa.jpg' },
+    // Roja a rayas finas negras, inspirada en la suplente de 1997.
+    { kind: 'especial', file: '2013/especial.jpg' },
+  ],
+  2009: [
+    { kind: 'titular', file: '2009/titular.jpg' },
+  ],
+  2008: [
+    { kind: 'titular', file: '2008/titular.jpg' },
+  ],
+  '2006-07': [
+    { kind: 'titular', file: '2006-07/titular.jpg' },
+  ],
+  '2005-06': [
+    { kind: 'titular', file: '2005-06/titular.jpg' },
+  ],
+  '2004-05': [
+    { kind: 'titular', file: '2004-05/titular.jpg' },
+  ],
+  '2003-04': [
+    { kind: 'titular', file: '2003-04/titular.jpg' },
+  ],
+  '2002-03': [
+    { kind: 'titular', file: '2002-03/titular.jpg' },
+  ],
+  '2000-01': [
+    { kind: 'titular', file: '2000-01/titular.jpg' },
+  ],
+  '1999-00': [
+    { kind: 'titular', file: '1999-00/titular.jpg' },
+    { kind: 'suplente', file: '1999-00/suplente.jpg' },
+    { kind: 'alternativa', file: '1999-00/alternativa.jpg' },
+  ],
   1973: [
     { kind: 'titular', file: '1973/titular.png' },
   ],
 };
 
 /** Años que todavía dependen de las fotos viejas sin clasificar. */
-const LEGACY_YEARS = new Set([2012, 2013, 2016, 2019]);
+const LEGACY_YEARS = new Set([2012, 2016, 2019]);
 
 /**
  * Qué es cada una de las viejas. Salió de mirarlas: en Huracán la titular es
@@ -128,14 +167,12 @@ const LEGACY_YEARS = new Set([2012, 2013, 2016, 2019]);
  * pero lleva el logo de Kappa, y en 2013 el club vistió Joma. Confirmado por
  * Vitto, así que se la movió de año y ahora es '2012-titular'.
  *
- * FALTA, Y SE SABE QUE EXISTIÓ: la edición especial inspirada en la suplente de
- * 1997. No hay foto todavía.
+ * Las Joma de 2013 ('2013', '2013-v2') ya no se usan: las reemplazaron las
+ * fotos nuevas del catálogo.
  */
 const LEGACY_TYPES = {
   '2012': 'suplente',        // roja, Kappa, Banco Ciudad
   '2012-v2': 'alternativa',  // negra, Kappa, Banco Ciudad
-  '2013': 'titular',         // blanca de cuello rojo, Joma, Banco Ciudad
-  '2013-v2': 'alternativa',  // azul, Joma, Banco Ciudad
   '2012-titular': 'titular', // blanca, Kappa, Banco Ciudad — ver la nota de arriba
   '2016': 'alternativa',     // verde, TBS, LN Seguros
   '2019': 'titular',         // blanca de rayas finas, TBS, Banco Ciudad
@@ -160,17 +197,18 @@ export const ROLE_LABEL = {
 
 function catalogueKits() {
   const out = [];
-  for (const [rawYear, entries] of Object.entries(CATALOGUE)) {
-    const year = Number(rawYear);
+  for (const [season, entries] of Object.entries(CATALOGUE)) {
+    const year = seasonStart(season);
     for (const entry of entries) {
       const type = KIT_TYPES[entry.kind];
       const slot = entry.slot || 1;
       const isKeeper = entry.kind === 'arquero';
       // El número del arquero ordena y hace único al id, pero no se muestra: las
       // de arquero no tienen nombre, alcanza con que se vea que son de arquero.
-      const id = isKeeper ? `${year}-arquero-${slot}` : `${year}-${entry.kind}`;
+      const id = isKeeper ? `${season}-arquero-${slot}` : `${season}-${entry.kind}`;
       out.push({
         id,
+        season,
         year,
         kind: entry.kind,
         slot,
@@ -206,6 +244,7 @@ function legacyKits() {
     const type = kind ? KIT_TYPES[kind] : null;
     return {
       id: jersey.id,
+      season: String(year),
       year,
       kind,
       slot: 1,
@@ -225,20 +264,22 @@ function legacyKits() {
 
 /** Todas las camisetas conocidas, de la temporada más nueva a la más vieja. */
 export const SEASON_KITS = [...catalogueKits(), ...legacyKits()].sort(
-  (a, b) => b.year - a.year || a.rank - b.rank || String(a.id).localeCompare(String(b.id))
+  (a, b) => bySeasonDesc(a.season, b.season) || a.rank - b.rank || String(a.id).localeCompare(String(b.id))
 );
 
-const BY_YEAR = new Map();
+const BY_SEASON = new Map();
 for (const kit of SEASON_KITS) {
-  if (!BY_YEAR.has(kit.year)) BY_YEAR.set(kit.year, []);
-  BY_YEAR.get(kit.year).push(kit);
+  if (!BY_SEASON.has(kit.season)) BY_SEASON.set(kit.season, []);
+  BY_SEASON.get(kit.season).push(kit);
 }
 
 const BY_ID = new Map(SEASON_KITS.map((k) => [k.id, k]));
 
-export const kitsForYear = (year) => (BY_YEAR.get(Number(year)) || []).slice();
+export const kitsForSeason = (season) => (BY_SEASON.get(String(season)) || []).slice();
+/** Las camisetas de la temporada en que se jugó un partido. */
+export const kitsForMatch = (match) => kitsForSeason(seasonOfDate(match.date));
 export const seasonKitById = (id) => BY_ID.get(id) || null;
-export const yearsWithKits = () => [...BY_YEAR.keys()].sort((a, b) => b - a);
+export const seasonsWithKits = () => [...BY_SEASON.keys()].sort(bySeasonDesc);
 export const kitCount = () => SEASON_KITS.length;
 
 /** Cuántas camisetas hay por rol, para las cifras de la colección. */

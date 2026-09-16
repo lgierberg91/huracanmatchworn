@@ -1,7 +1,7 @@
 /**
  * Ficha de una camiseta de temporada.
  *
- * Muestra la prenda grande y, debajo, los partidos de ese año — que es desde
+ * Muestra la prenda grande y, debajo, los partidos de esa temporada — que es desde
  * donde se carga a mano qué camiseta se usó en cada uno. El detalle por partido
  * vive en `match_kits`; esta ficha es el nivel de temporada.
  */
@@ -9,9 +9,10 @@
 import { esc, qs, on } from '../lib/dom.js';
 import { icon } from '../lib/icons.js';
 import { plural } from '../lib/format.js';
-import { matchesOfYear, record } from '../data/store.js';
-import { seasonKitById, kitsForYear, ROLE_LABEL } from '../data/seasonKits.js';
-import { brandForYear, sponsorForYear } from '../data/brands.js';
+import { record } from '../data/store.js';
+import { matchesOfSeason } from '../data/seasons.js';
+import { seasonKitById, kitsForSeason, ROLE_LABEL } from '../data/seasonKits.js';
+import { brandForSeason, sponsorForSeason } from '../data/brands.js';
 import { matchRowHTML, emptyStateHTML } from '../components/matchCard.js';
 import { sectionHead, splitBarHTML } from '../components/ui.js';
 
@@ -30,11 +31,11 @@ export function renderCamiseta(ctx) {
       </div>`;
   }
 
-  const matches = matchesOfYear(kit.year);
+  const matches = matchesOfSeason(kit.season);
   const balance = record(matches);
-  const brand = brandForYear(kit.year);
-  const sponsor = sponsorForYear(kit.year);
-  const siblings = kitsForYear(kit.year).filter((k) => k.id !== kit.id);
+  const brand = brandForSeason(kit.season);
+  const sponsor = sponsorForSeason(kit.season);
+  const siblings = kitsForSeason(kit.season).filter((k) => k.id !== kit.id);
 
   return `<section class="skit-hero">
       <div class="shell">
@@ -44,7 +45,7 @@ export function renderCamiseta(ctx) {
             <img src="${esc(kit.src)}" alt="Camiseta de Huracán ${esc(kit.label)}">
           </figure>
           <div class="skit-hero__text">
-            <span class="eyebrow eyebrow--dark">Temporada ${kit.year}</span>
+            <span class="eyebrow eyebrow--dark">Temporada ${kit.season}</span>
             <h1>${esc(kit.label)}</h1>
             <div class="chip-row" style="margin-top:22px">
               ${(ROLE_LABEL[kit.role] || ROLE_LABEL.null) === kit.label
@@ -69,7 +70,7 @@ export function renderCamiseta(ctx) {
     <div class="shell section">
       ${siblings.length
         ? `<section class="reveal" style="margin-bottom:clamp(30px,4vw,48px)">
-            ${sectionHead({ eyebrow: `Temporada ${kit.year}`, title: 'Otras camisetas del mismo año' })}
+            ${sectionHead({ eyebrow: `Temporada ${kit.season}`, title: 'Otras camisetas de la misma temporada' })}
             <div class="skit-row">
               ${siblings
                 .map(
@@ -91,7 +92,7 @@ export function renderCamiseta(ctx) {
       <section class="reveal">
         ${sectionHead({
           eyebrow: 'En qué partidos se usó',
-          title: `Los ${plural(matches.length, 'partido', 'partidos')} de ${kit.year}`,
+          title: `Los ${plural(matches.length, 'partido', 'partidos')} de ${kit.season}`,
         })}
         <p class="stat__note" style="margin-bottom:18px">
           La camiseta de cada partido se carga desde la ficha del partido. Entrá al que

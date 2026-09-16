@@ -31,6 +31,8 @@ let byId = new Map();
 let byYear = new Map();
 let byClub = new Map();
 let stats = null;
+/** Sube cada vez que se rearman los índices: quien cachee algo derivado lo compara. */
+let indexVersion = 0;
 
 function buildIndexes() {
   byId = new Map();
@@ -48,6 +50,7 @@ function buildIndexes() {
     byClub.get(id).matches.push(match);
   }
   stats = null;
+  indexVersion++;
 }
 
 /* ---------------- carga ---------------- */
@@ -132,6 +135,7 @@ export function patchMatch(id, changes) {
 export const getMatch = (id) => byId.get(id) || null;
 export const matchesOfYear = (year) => (byYear.get(Number(year)) || []).slice();
 export const clubEntry = (id) => byClub.get(id) || null;
+export const indexesVersion = () => indexVersion;
 export const allYears = () => [...byYear.keys()].sort((a, b) => a - b);
 
 /** Rivales ordenados por cantidad de partidos, con su balance. */
