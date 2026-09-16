@@ -2,11 +2,13 @@
  * Ficha de una nota del blog.
  */
 
-import { esc } from '../lib/dom.js';
+import { esc, qs } from '../lib/dom.js';
 import { icon } from '../lib/icons.js';
 import { blogPostBySlug, blogPostsSorted } from '../data/blog.js';
 import { emptyStateHTML } from '../components/matchCard.js';
 import { blogPostHref } from './blog.js';
+import { fetchBlogPhotos } from '../data/api.js';
+import { blogPhotosHTML, mountBlogPhotos } from '../components/blogPhotos.js';
 
 export function renderBlogPost(ctx) {
   const post = blogPostBySlug(ctx.params.get('id'));
@@ -34,11 +36,7 @@ export function renderBlogPost(ctx) {
           <div class="prose">
             ${post.body.map((p) => `<p>${esc(p)}</p>`).join('')}
           </div>
-          <p class="prose" style="margin-top:28px;padding-top:20px;border-top:1px solid var(--line)">
-            Nota basada en la investigación de
-            <a href="${esc(post.sourceUrl)}" target="_blank" rel="noopener">En una Baldosa</a>,
-            donde además se pueden ver las fotos originales de la camiseta.
-          </p>
+          <div id="blog-photos-slot"></div>
         </article>
         ${others.length
           ? `<div style="margin-top:40px">
@@ -60,4 +58,23 @@ export function renderBlogPost(ctx) {
           : ''}
       </div>
     </section>`;
+}
+
+export function mountBlogPost(ctx, rerender) {
+  const post = blogPostBySlug(ctx.params.get('id'));
+  if (!post) return;
+
+  const slot = qs('#blog-photos-slot');
+  if (!slot) return;
+
+  fetchBlogPhotos(post.slug)
+    .then((photos) => {
+      slot.innerHTML = blogPhotosHTML(photos);
+      mountBlogPhotos(post.slug, rerender);
+    })
+    .catch((error) => {
+      console.error(error);
+      slot.innerHTML = blogPhotosHTML([]);
+      mountBlogPhotos(post.slug, rerender);
+    });
 }

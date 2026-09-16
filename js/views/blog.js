@@ -31,9 +31,7 @@ export function renderBlog() {
           title: 'Historias de camisetas',
         })}
         <p class="prose" style="margin:-6px 0 28px">Notas sobre piezas puntuales del archivo: camisetas de un solo
-          partido, urgencias de vestuario, homenajes y rarezas que no entran en la línea de temporadas. Los hechos
-          están chequeados contra <a href="https://enunabaldosa.com" target="_blank" rel="noopener">En una Baldosa</a>,
-          un archivo de la comunidad al que cada nota linkea para quien quiera ver más.</p>
+          partido, urgencias de vestuario, homenajes y rarezas que vale la pena detallar.</p>
         <div class="blog-list">
           ${posts.map(blogCardHTML).join('')}
         </div>

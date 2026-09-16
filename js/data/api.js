@@ -135,6 +135,43 @@ export async function submitKitInfo(payload) {
   return true;
 }
 
+/** Fotos aportadas para una nota del blog (tabla blog_photos, misma lógica que match_photos). */
+export async function fetchBlogPhotos(slug) {
+  const url =
+    `${SUPABASE_URL}/rest/v1/blog_photos?slug=eq.${encodeURIComponent(slug)}` +
+    '&select=*&order=created_at.asc';
+  const response = await fetch(url, { headers: headers() });
+  if (!response.ok) throw await readError(response);
+  return response.json();
+}
+
+/** Sube una foto para una nota del blog al bucket y registra la fila en blog_photos. */
+export async function uploadBlogPhoto(slug, file, contributorName) {
+  const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+  const path = `blog/${slug}/${Date.now()}-${safeName}`;
+
+  const upload = await fetch(`${SUPABASE_URL}/storage/v1/object/${PHOTO_BUCKET}/${path}`, {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': file.type || 'application/octet-stream' }),
+    body: file,
+  });
+  if (!upload.ok) throw await readError(upload);
+
+  const row = await fetch(`${SUPABASE_URL}/rest/v1/blog_photos`, {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
+    body: JSON.stringify({
+      slug,
+      storage_path: path,
+      caption: null,
+      contributor_name: contributorName || null,
+    }),
+  });
+  if (!row.ok) throw await readError(row);
+
+  return path;
+}
+
 /** Sube el archivo al bucket y registra la fila en match_photos. */
 export async function uploadPhoto(matchId, file, contributorName) {
   const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');

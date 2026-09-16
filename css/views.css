@@ -674,7 +674,7 @@ textarea.field{ resize: vertical; min-height: 88px; line-height: 1.5; }
 }
 .blog-card{
   display: block; padding: 20px; border-radius: var(--r-lg);
-  background: var(--paper-2); border: 1px solid var(--line);
+  background: var(--paper-2); border: 1px solid var(--line); border-top: 3px solid var(--red);
   transition: transform var(--t-mid) var(--ease-out), box-shadow var(--t-mid) var(--ease-out), border-color var(--t-mid) var(--ease);
 }
 .blog-card:hover, .blog-card:focus-visible{
