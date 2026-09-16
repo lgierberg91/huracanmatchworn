@@ -133,9 +133,14 @@ function decadesHTML() {
 function latestHTML() {
   const list = latestPlayed(8);
   if (!list.length) return '';
-  return `<section class="section section--tight">
+  return `<section class="section section--tight" id="latest-matches">
       <div class="shell">
-        ${sectionHead({ eyebrow: 'Lo último', title: 'Partidos recientes' })}
+        ${sectionHead({
+          eyebrow: 'Lo último',
+          title: 'Partidos recientes',
+          link: { href: '#/coleccion?orden=newest', text: 'Ver todas' },
+          nav: true,
+        })}
         <div class="piece-rail">${list.map((m) => matchCardHTML(m)).join('')}</div>
       </div>
     </section>`;
@@ -151,7 +156,20 @@ export function renderHome() {
     ${onThisDayHTML()}`;
 }
 
+function mountLatestNav() {
+  const section = document.getElementById('latest-matches');
+  if (!section) return;
+  const rail = section.querySelector('.piece-rail');
+  const prev = section.querySelector('[data-rail-nav="prev"]');
+  const next = section.querySelector('[data-rail-nav="next"]');
+  if (!rail || !prev || !next) return;
+  const step = () => Math.min(rail.clientWidth * 0.9, 640);
+  prev.addEventListener('click', () => rail.scrollBy({ left: -step(), behavior: 'smooth' }));
+  next.addEventListener('click', () => rail.scrollBy({ left: step(), behavior: 'smooth' }));
+}
+
 export function mountHome() {
+  mountLatestNav();
   return mountDressUpCompact();
 }
 

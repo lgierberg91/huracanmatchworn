@@ -23,6 +23,16 @@
   transition: gap var(--t-fast) var(--ease);
 }
 .section-head__link:hover{ gap: 12px; }
+.section-head__actions{ display: flex; align-items: center; gap: 16px; flex: none; }
+.rail-nav{ display: flex; align-items: center; gap: 6px; }
+.rail-nav__btn{
+  width: 32px; height: 32px; border-radius: var(--r-pill); flex: none;
+  display: grid; place-items: center; font-size: 1.1rem; line-height: 1;
+  border: 1px solid var(--line); color: var(--ink-2); background: transparent;
+  transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+.rail-nav__btn:hover{ color: var(--red); border-color: var(--red); background: var(--red-tint); }
+.rail-nav__btn:disabled{ opacity: .35; pointer-events: none; }
 
 /* ---------- topbar ---------- */
 .topbar{

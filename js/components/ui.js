@@ -5,13 +5,20 @@
 import { esc, cx } from '../lib/dom.js';
 import { num } from '../lib/format.js';
 
-export function sectionHead({ eyebrow = '', title, link = null, onDark = false }) {
+export function sectionHead({ eyebrow = '', title, link = null, onDark = false, nav = false }) {
+  const linkHTML = link ? `<a class="section-head__link mono" href="${esc(link.href)}">${esc(link.text)} →</a>` : '';
+  const navHTML = nav
+    ? `<div class="rail-nav">
+        <button type="button" class="rail-nav__btn" data-rail-nav="prev" aria-label="Ver anteriores">‹</button>
+        <button type="button" class="rail-nav__btn" data-rail-nav="next" aria-label="Ver siguientes">›</button>
+      </div>`
+    : '';
   return `<header class="section-head">
       <div class="section-head__title">
         ${eyebrow ? `<span class="${cx('eyebrow', onDark && 'eyebrow--dark')}">${esc(eyebrow)}</span>` : ''}
         <h2>${esc(title)}</h2>
       </div>
-      ${link ? `<a class="section-head__link mono" href="${esc(link.href)}">${esc(link.text)} →</a>` : ''}
+      ${(linkHTML || navHTML) ? `<div class="section-head__actions">${linkHTML}${navHTML}</div>` : ''}
     </header>`;
 }
 
