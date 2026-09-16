@@ -157,7 +157,7 @@ function yearBlockHTML(season, kits) {
               <span>Los ${plural(matches.length, 'partido', 'partidos')} de ${season}, uno por uno</span>
             </span>
             <span class="tl-year__cta-arrow">${icon('arrowRight')}</span>
-          </a>` : ''}
+          </a>` : `<p class="tl-year__missing mono">Faltan cargar los partidos de ${season}</p>`}
       </div>
     </section>`;
 }
