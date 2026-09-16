@@ -668,6 +668,23 @@ textarea.field{ resize: vertical; min-height: 88px; line-height: 1.5; }
 .prose a{ color: var(--red); text-decoration: underline; text-underline-offset: 3px; }
 .prose ul{ color: var(--ink-2); padding-left: 20px; display: grid; gap: 7px; margin-block: 0 1em; }
 
+/* ============ BLOG ============ */
+.blog-list{
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px;
+}
+.blog-card{
+  display: block; padding: 20px; border-radius: var(--r-lg);
+  background: var(--paper-2); border: 1px solid var(--line);
+  transition: transform var(--t-mid) var(--ease-out), box-shadow var(--t-mid) var(--ease-out), border-color var(--t-mid) var(--ease);
+}
+.blog-card:hover, .blog-card:focus-visible{
+  transform: translateY(-4px); box-shadow: var(--sh-3); border-color: var(--line-2);
+}
+.blog-card__head{ display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.blog-card__head svg{ width: 15px; height: 15px; flex: none; color: var(--ink-3); }
+.blog-card__title{ font-family: var(--font-display); font-size: var(--fs-lg); line-height: 1.15; margin: 10px 0 8px; }
+.blog-card__dek{ color: var(--ink-2); font-size: var(--fs-sm); }
+
 .route-loading{ display: grid; place-items: center; gap: 14px; padding: clamp(60px, 14vh, 140px) 0; color: var(--ink-3); }
 
 /* La flecha del backlink no debe crecer con el texto. */

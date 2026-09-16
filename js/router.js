@@ -15,6 +15,8 @@ import { renderCamisetas, mountCamisetas } from './views/camisetas.js';
 import { renderCamiseta, mountCamiseta } from './views/camiseta.js';
 import { renderKitCreator, mountKitCreator } from './views/kitCreator.js';
 import { renderJuego, mountJuego } from './views/juego.js';
+import { renderBlog } from './views/blog.js';
+import { renderBlogPost } from './views/blogPost.js';
 
 // El navegador restaura solo la posición de scroll al crear entradas de historial,
 // y en una SPA eso deja la vista nueva abierta a media página. Se apaga al importar,
@@ -29,6 +31,8 @@ const ROUTES = [
   { pattern: /^\/juego$/, id: 'juego', title: 'Qué camiseta es', render: renderJuego, mount: mountJuego },
   { pattern: /^\/coleccion$/, id: 'partidos', title: 'Partidos', render: renderColeccion, mount: mountColeccion },
   { pattern: /^\/estadisticas$/, id: 'estadisticas', title: 'Estadísticas', render: renderEstadisticas },
+  { pattern: /^\/blog$/, id: 'blog', title: 'Blog', render: renderBlog },
+  { pattern: /^\/blog\/(?<id>.+)$/, id: 'blog', title: 'Blog', render: renderBlogPost },
   { pattern: /^\/admin$/, id: 'admin', title: 'Administración', render: renderAdmin, mount: mountAdmin },
   { pattern: /^\/temporada\/(?<year>\d{4})$/, id: 'camisetas', title: 'Temporada', render: renderTemporada },
   { pattern: /^\/partido\/(?<id>.+)$/, id: 'partidos', title: 'Partido', render: renderPartido, mount: mountPartido },
