@@ -68,6 +68,11 @@ export function competitionFamily(competition) {
  * cambiar de nombre: SAF entre el 27/6/2017 y el 19/5/2020, LPF (amarillo)
  * hasta el 8/1/2026, y LPF (celeste) desde el 9/1/2026. Antes del 27/6/2017
  * no hubo parche de liga, así que no se muestra nada.
+ *
+ * La Copa Argentina también rediseñó su isotipo: el sol con ondas celestes
+ * se usó desde que se reinstauró el torneo (2011/2012) hasta la edición
+ * 2021/2022, y desde el 23/2/2022 se usa el isotipo nuevo (triángulos y
+ * pentágonos).
  */
 export function competitionLogo(family, date) {
   const id = family && family.id;
@@ -80,7 +85,10 @@ export function competitionLogo(family, date) {
   if (id === 'primera-nacional') return 'assets/competitions/primera-nacional.svg';
   if (id === 'libertadores') return 'assets/competitions/libertadores.svg';
   if (id === 'sudamericana') return 'assets/competitions/sudamericana.svg';
-  if (id === 'copa-argentina') return 'assets/competitions/copa-argentina.png';
+  if (id === 'copa-argentina') {
+    if (date >= '2022-02-23') return 'assets/competitions/copa-argentina-2022.png';
+    return 'assets/competitions/copa-argentina-2012.png';
+  }
   return null;
 }
 
