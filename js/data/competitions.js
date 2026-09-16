@@ -80,6 +80,7 @@ export function competitionLogo(family, date) {
   if (id === 'primera-nacional') return 'assets/competitions/primera-nacional.svg';
   if (id === 'libertadores') return 'assets/competitions/libertadores.svg';
   if (id === 'sudamericana') return 'assets/competitions/sudamericana.svg';
+  if (id === 'copa-argentina') return 'assets/competitions/copa-argentina.png';
   return null;
 }
 
