@@ -31,8 +31,15 @@
   padding: 9px 0; text-transform: uppercase;
 }
 .topbar:empty{ display: none; }
-.topbar__inner{ display: flex; align-items: center; gap: 24px; justify-content: center; text-align: center; flex-wrap: wrap; }
-.topbar__label{ opacity: .78; }
+.topbar__inner{
+  display: flex; align-items: center; gap: 24px; justify-content: center;
+  text-align: center; flex-wrap: wrap; overflow: hidden;
+}
+.topbar__label{ opacity: .78; flex: none; white-space: nowrap; }
+.topbar__viewport{ display: contents; }
+.topbar__marquee{ display: contents; }
+.topbar__group{ display: contents; }
+.topbar__group--dup{ display: none; }
 .topbar__fixture{
   display: inline-flex; align-items: center; gap: 7px; color: #fff;
   transition: opacity var(--t-fast) var(--ease);
@@ -43,6 +50,33 @@
 .topbar__comp{ height: 16px; width: auto; max-width: 22px; object-fit: contain; flex: none; }
 .topbar__comp--text{ opacity: .78; font-size: .95em; }
 .topbar__sep{ opacity: .4; }
+
+/* Mobile: los partidos no entran en una fila -> se convierte en una cinta
+   que se desplaza sola en vez de partirse en varias líneas. */
+@media (max-width: 680px){
+  .topbar__inner{ flex-wrap: nowrap; justify-content: flex-start; text-align: left; }
+  .topbar__viewport{
+    display: block; flex: 1 1 auto; min-width: 0; overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, #000 16px, #000 calc(100% - 16px), transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 16px, #000 calc(100% - 16px), transparent);
+  }
+  .topbar__marquee{
+    display: flex; align-items: center; gap: 24px; width: max-content;
+    animation: topbar-marquee 18s linear infinite;
+  }
+  .topbar__viewport:hover .topbar__marquee, .topbar__viewport:focus-within .topbar__marquee{
+    animation-play-state: paused;
+  }
+  .topbar__group{ display: flex; align-items: center; gap: 24px; flex: none; white-space: nowrap; }
+  .topbar__group--dup{ display: flex; }
+}
+@keyframes topbar-marquee{
+  from{ transform: translateX(0); }
+  to{ transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce){
+  .topbar__marquee{ animation: none; }
+}
 
 /* ---------- header ---------- */
 .site-header{

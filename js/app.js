@@ -63,7 +63,12 @@ function renderTopbar() {
     .join('<span class="topbar__sep" aria-hidden="true">·</span>');
   el.innerHTML = `<div class="shell topbar__inner">
       <span class="topbar__label">Próximo${fixtures.length > 1 ? 's' : ''} partido${fixtures.length > 1 ? 's' : ''}</span>
-      ${items}
+      <div class="topbar__viewport">
+        <div class="topbar__marquee">
+          <span class="topbar__group">${items}</span>
+          <span class="topbar__group topbar__group--dup" aria-hidden="true">${items}</span>
+        </div>
+      </div>
     </div>`;
 }
 
