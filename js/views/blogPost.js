@@ -30,17 +30,13 @@ export function renderBlogPost(ctx) {
   return `<section class="section section--tight">
       <div class="shell">
         <a class="backlink" href="#/blog">${icon('arrowLeft')} El blog</a>
-        <article class="blog-post" style="margin-top:20px">
-          <div class="blog-post__body">
-            <span class="eyebrow">${esc(post.era)} · ${esc(post.tag)}</span>
-            <h1 style="margin:10px 0 20px">${esc(post.title)}</h1>
-            <div class="prose">
-              ${post.body.map((p) => `<p>${esc(p)}</p>`).join('')}
-            </div>
+        <article style="margin-top:20px">
+          <span class="eyebrow">${esc(post.era)} · ${esc(post.tag)}</span>
+          <h1 style="margin:10px 0 20px">${esc(post.title)}</h1>
+          <div class="prose">
+            ${post.body.map((p) => `<p>${esc(p)}</p>`).join('')}
           </div>
-          <aside class="blog-post__media">
-            <div id="blog-photos-slot"></div>
-          </aside>
+          <div id="blog-photos-slot"></div>
         </article>
         ${others.length
           ? `<div style="margin-top:40px">

@@ -685,18 +685,17 @@ textarea.field{ resize: vertical; min-height: 88px; line-height: 1.5; }
 .blog-card__title{ font-family: var(--font-display); font-size: var(--fs-lg); line-height: 1.15; margin: 10px 0 8px; }
 .blog-card__dek{ color: var(--ink-2); font-size: var(--fs-sm); }
 
-/* Ficha de una nota: texto a la izquierda, fotos grandes al costado. */
-.blog-post{
-  display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 340px);
-  gap: clamp(24px, 4vw, 48px);
-  align-items: start;
+/* Ficha de una nota: fotos aportadas en una tira horizontal, tipo diario fotográfico. */
+.blog-photos{ margin-top: 28px; }
+.blog-photos__head{ display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.blog-photos .gallery--rail{
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(220px, 300px);
+  gap: 14px; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x mandatory;
+  scrollbar-width: thin; margin-top: 0;
 }
-.blog-post__media{ position: sticky; top: calc(var(--header-h) + 16px); }
-.blog-photos .gallery{ grid-template-columns: 1fr; gap: 14px; margin-top: 0; }
-.blog-photos .gallery__thumb{ aspect-ratio: 4 / 3; }
-@media (max-width: 860px){
-  .blog-post{ grid-template-columns: minmax(0, 1fr); }
-  .blog-post__media{ position: static; }
+.blog-photos .gallery--rail .gallery__thumb{ aspect-ratio: 4 / 3; scroll-snap-align: start; }
+@media (max-width: 640px){
+  .blog-photos .gallery--rail{ grid-auto-columns: minmax(170px, 220px); }
 }
 
 .route-loading{ display: grid; place-items: center; gap: 14px; padding: clamp(60px, 14vh, 140px) 0; color: var(--ink-3); }

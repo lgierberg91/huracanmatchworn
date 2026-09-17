@@ -7,6 +7,7 @@
 
 import { esc, qs, toast } from '../lib/dom.js';
 import { icon } from '../lib/icons.js';
+import { plural } from '../lib/format.js';
 import { MAX_UPLOAD_BYTES } from '../config.js';
 import { uploadBlogPhoto, photoUrl } from '../data/api.js';
 import { contributorName } from '../lib/storage.js';
@@ -14,7 +15,16 @@ import { isMember } from '../data/auth.js';
 
 function galleryHTML(photos) {
   if (!photos.length) return '';
-  return `<div class="gallery" id="blog-gallery">
+  return `<div class="blog-photos__head">
+        <span class="eyebrow">${plural(photos.length, 'foto', 'fotos')}</span>
+        ${photos.length > 1
+          ? `<div class="rail-nav">
+              <button type="button" class="rail-nav__btn" data-rail-nav="prev" aria-label="Ver anteriores">‹</button>
+              <button type="button" class="rail-nav__btn" data-rail-nav="next" aria-label="Ver siguientes">›</button>
+            </div>`
+          : ''}
+      </div>
+      <div class="gallery gallery--rail" id="blog-gallery">
       ${photos
         .map(
           (p) => `<button type="button" class="gallery__thumb" data-full="${esc(photoUrl(p.storage_path))}">
@@ -50,6 +60,15 @@ export function blogPhotosHTML(photos) {
  * @param {() => void} onChange  se llama cuando se subió una foto nueva
  */
 export function mountBlogPhotos(slug, onChange) {
+  const rail = qs('#blog-gallery');
+  const prev = qs('[data-rail-nav="prev"]');
+  const next = qs('[data-rail-nav="next"]');
+  if (rail && prev && next) {
+    const step = () => Math.min(rail.clientWidth * 0.9, 640);
+    prev.addEventListener('click', () => rail.scrollBy({ left: -step(), behavior: 'smooth' }));
+    next.addEventListener('click', () => rail.scrollBy({ left: step(), behavior: 'smooth' }));
+  }
+
   const lightbox = qs('#lightbox');
   const lightboxImg = qs('#lightbox-img');
   if (lightbox) {
