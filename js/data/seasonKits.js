@@ -151,6 +151,12 @@ const CATALOGUE = {
     { kind: 'suplente', file: '1999-00/suplente.jpg' },
     { kind: 'alternativa', file: '1999-00/alternativa.jpg' },
   ],
+  1984: [
+    { kind: 'titular', file: '1984/titular.png' },
+  ],
+  1982: [
+    { kind: 'titular', file: '1982/titular.png' },
+  ],
   1973: [
     { kind: 'titular', file: '1973/titular.png' },
   ],
