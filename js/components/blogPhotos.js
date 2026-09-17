@@ -35,7 +35,7 @@ function uploaderHTML() {
 }
 
 export function blogPhotosHTML(photos) {
-  return `<div class="blog-photos" style="margin-top:24px">
+  return `<div class="blog-photos">
       ${galleryHTML(photos)}
       ${uploaderHTML()}
       <div class="lightbox" id="lightbox" hidden>
